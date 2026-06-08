@@ -16,9 +16,5 @@
     "panel_version": null,
     "composer_packages": {
         "minishlink/web-push": "^9.0"
-    },
-    "meta": {
-        "status": "enabled",
-        "status_message": null
     }
 }
