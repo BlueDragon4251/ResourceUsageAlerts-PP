@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+$boolean = static fn (mixed $value, bool $default): bool => filter_var(
+    $value,
+    FILTER_VALIDATE_BOOLEAN,
+    FILTER_NULL_ON_FAILURE
+) ?? $default;
+
+return [
+    'enabled' => $boolean(env('RESOURCE_USAGE_ALERTS_ENABLED', true), true),
+    'poll_interval_minutes' => max(1, (int) env('RESOURCE_USAGE_ALERTS_POLL_INTERVAL', 5)),
+    'sample_retention_days' => max(1, (int) env('RESOURCE_USAGE_ALERTS_SAMPLE_RETENTION_DAYS', 14)),
+    'event_retention_days' => max(1, (int) env('RESOURCE_USAGE_ALERTS_EVENT_RETENTION_DAYS', 90)),
+    'discord_timeout_seconds' => max(1, (int) env('RESOURCE_USAGE_ALERTS_DISCORD_TIMEOUT', 5)),
+    'allow_user_rules' => $boolean(env('RESOURCE_USAGE_ALERTS_ALLOW_USER_RULES', true), true),
+    'allow_user_channels' => $boolean(env('RESOURCE_USAGE_ALERTS_ALLOW_USER_CHANNELS', true), true),
+    'global_discord_webhook' => env('RESOURCE_USAGE_ALERTS_GLOBAL_DISCORD_WEBHOOK'),
+    'minimum_notification_severity' => env('RESOURCE_USAGE_ALERTS_MINIMUM_SEVERITY', 'info'),
+    'push_enabled' => $boolean(env('RESOURCE_USAGE_ALERTS_PUSH_ENABLED', true), true),
+    'vapid_subject' => env('RESOURCE_USAGE_ALERTS_VAPID_SUBJECT', env('APP_URL')),
+    'vapid_public_key' => env('RESOURCE_USAGE_ALERTS_VAPID_PUBLIC_KEY'),
+    'vapid_private_key' => env('RESOURCE_USAGE_ALERTS_VAPID_PRIVATE_KEY'),
+    'default_channels' => ['panel', 'push'],
+    'chunk_size' => 100,
+];
