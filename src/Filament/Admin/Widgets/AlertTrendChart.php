@@ -11,7 +11,7 @@ use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
 
 class AlertTrendChart extends Widget
 {
-    protected static string $view = 'resourceusagealerts::widgets.alert-chart';
+    protected string $view = 'resourceusagealerts::widgets.alert-chart';
 
     /** @var array<int, string> */
     public array $labels = [];
