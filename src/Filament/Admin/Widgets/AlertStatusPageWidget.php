@@ -11,7 +11,7 @@ use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
 
 class AlertStatusPageWidget extends Widget
 {
-    protected static string $view = 'resourceusagealerts::widgets.alert-status-page';
+    protected string $view = 'resourceusagealerts::widgets.alert-status-page';
 
     public int $totalOpen = 0;
 
@@ -33,13 +33,21 @@ class AlertStatusPageWidget extends Widget
     public function refreshData(): void
     {
         $this->totalOpen = ResourceAlertEvent::where('status', AlertStatus::OPEN)->count();
+
         $this->criticalOpen = ResourceAlertEvent::where('status', AlertStatus::OPEN)
-            ->where('severity', AlertSeverity::CRITICAL)->count();
+            ->where('severity', AlertSeverity::CRITICAL)
+            ->count();
+
         $this->warningOpen = ResourceAlertEvent::where('status', AlertStatus::OPEN)
-            ->where('severity', AlertSeverity::WARNING)->count();
+            ->where('severity', AlertSeverity::WARNING)
+            ->count();
+
         $this->acknowledgedOpen = ResourceAlertEvent::where('status', AlertStatus::ACKNOWLEDGED)->count();
+
         $this->totalResolved24h = ResourceAlertEvent::where('status', AlertStatus::RESOLVED)
-            ->where('resolved_at', '>=', now()->subDay())->count();
+            ->where('resolved_at', '>=', now()->subDay())
+            ->count();
+
         $this->totalTriggered24h = ResourceAlertEvent::where('triggered_at', '>=', now()->subDay())->count();
     }
 
@@ -48,9 +56,11 @@ class AlertStatusPageWidget extends Widget
         if ($this->criticalOpen > 0) {
             return 'danger';
         }
+
         if ($this->warningOpen > 0) {
             return 'warning';
         }
+
         if ($this->acknowledgedOpen > 0) {
             return 'info';
         }
