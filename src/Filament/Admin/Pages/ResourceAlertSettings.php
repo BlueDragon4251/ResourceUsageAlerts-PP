@@ -23,7 +23,7 @@ class ResourceAlertSettings extends Page implements HasForms
 
     protected static string|\BackedEnum|null $navigationIcon = 'tabler-settings';
 
-    protected static string $navigationGroup = 'Resource Alerts';
+    protected static ?string $navigationGroup = 'Resource Alerts';
 
     protected static ?string $navigationLabel = 'Settings';
 
