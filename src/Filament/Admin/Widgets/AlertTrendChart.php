@@ -4,40 +4,52 @@ declare(strict_types=1);
 
 namespace PelicanPlugins\ResourceUsageAlerts\Filament\Admin\Widgets;
 
-use Filament\Widgets\ChartWidget;
+use Filament\Widgets\Widget;
+use Illuminate\Support\Carbon;
+use PelicanPlugins\ResourceUsageAlerts\Enums\AlertSeverity;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
 
-class AlertTrendChart extends ChartWidget
+class AlertTrendChart extends Widget
 {
-    protected ?string $maxHeight = '260px';
+    protected static string $view = 'resourceusagealerts::widgets.alert-chart';
 
-    public function getHeading(): string
+    /** @var array<int, string> */
+    public array $labels = [];
+
+    /** @var array<int, int> */
+    public array $criticalData = [];
+
+    /** @var array<int, int> */
+    public array $warningData = [];
+
+    public function mount(): void
     {
-        return trans('resourceusagealerts::strings.dashboard.trend');
+        $this->loadData();
     }
 
-    protected function getData(): array
+    public function loadData(): void
     {
-        $days = collect(range(6, 0))->map(fn (int $daysAgo) => now()->subDays($daysAgo)->startOfDay());
-        $counts = $days->map(fn ($day) => ResourceAlertEvent::query()
-            ->whereBetween('triggered_at', [$day, $day->copy()->endOfDay()])
-            ->count());
+        $this->labels = [];
+        $this->criticalData = [];
+        $this->warningData = [];
 
-        return [
-            'datasets' => [[
-                'label' => trans('resourceusagealerts::strings.events.title'),
-                'data' => $counts->all(),
-                'borderColor' => '#f59e0b',
-                'backgroundColor' => 'rgba(245, 158, 11, 0.2)',
-                'fill' => true,
-                'tension' => 0.3,
-            ]],
-            'labels' => $days->map->format('Y-m-d')->all(),
-        ];
-    }
+        for ($i = 13; $i >= 0; --$i) {
+            $day = Carbon::today()->subDays($i);
+            $nextDay = $day->copy()->addDay();
 
-    protected function getType(): string
-    {
-        return 'line';
+            $this->labels[] = $day->format('M d');
+
+            $this->criticalData[] = ResourceAlertEvent::query()
+                ->where('severity', AlertSeverity::CRITICAL)
+                ->where('triggered_at', '>=', $day)
+                ->where('triggered_at', '<', $nextDay)
+                ->count();
+
+            $this->warningData[] = ResourceAlertEvent::query()
+                ->where('severity', AlertSeverity::WARNING)
+                ->where('triggered_at', '>=', $day)
+                ->where('triggered_at', '<', $nextDay)
+                ->count();
+        }
     }
 }

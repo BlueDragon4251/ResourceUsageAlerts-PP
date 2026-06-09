@@ -22,6 +22,7 @@ use PelicanPlugins\ResourceUsageAlerts\Filament\Admin\Resources\ResourceAlertEve
 use PelicanPlugins\ResourceUsageAlerts\Filament\Admin\Resources\ResourceAlertEvents\Pages\ViewResourceAlertEvent;
 use PelicanPlugins\ResourceUsageAlerts\Jobs\SendAlertNotificationJob;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
+use Filament\Tables\Enums\ActionsPosition;
 
 class ResourceAlertEventResource extends Resource
 {
@@ -49,7 +50,10 @@ class ResourceAlertEventResource extends Resource
         return $table
             ->defaultSort('triggered_at', 'desc')
             ->columns([
-                TextColumn::make('status')->badge()->sortable(),
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (AlertStatus $state) => $state->filamentColor())
+                    ->sortable(),
                 TextColumn::make('severity')
                     ->badge()
                     ->color(fn (AlertSeverity $state) => $state->filamentStatus()),
@@ -69,11 +73,27 @@ class ResourceAlertEventResource extends Resource
             ])
             ->recordActions([
                 ViewAction::make(),
+                Action::make('acknowledge')
+                    ->label(trans('resourceusagealerts::strings.events.acknowledge'))
+                    ->icon('tabler-eye-check')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->visible(fn (ResourceAlertEvent $record) => $record->status === AlertStatus::OPEN)
+                    ->action(function (ResourceAlertEvent $record): void {
+                        $record->update([
+                            'status' => AlertStatus::ACKNOWLEDGED,
+                            'acknowledged_at' => now(),
+                        ]);
+                        Notification::make()
+                            ->success()
+                            ->title(trans('resourceusagealerts::strings.events.acknowledged'))
+                            ->send();
+                    }),
                 Action::make('resolve')
                     ->icon('tabler-circle-check')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->visible(fn (ResourceAlertEvent $record) => $record->status === AlertStatus::OPEN)
+                    ->visible(fn (ResourceAlertEvent $record) => $record->status !== AlertStatus::RESOLVED)
                     ->action(function (ResourceAlertEvent $record): void {
                         $record->update(['status' => AlertStatus::RESOLVED, 'resolved_at' => now()]);
                         SendAlertNotificationJob::dispatch($record->id, true);
@@ -92,7 +112,9 @@ class ResourceAlertEventResource extends Resource
     {
         return $schema->components([
             TextEntry::make('rule.name'),
-            TextEntry::make('status')->badge(),
+            TextEntry::make('status')
+                ->badge()
+                ->color(fn (AlertStatus $state) => $state->filamentColor()),
             TextEntry::make('severity')->badge(),
             TextEntry::make('metric')->badge(),
             TextEntry::make('server.name')->placeholder('-'),
@@ -101,6 +123,7 @@ class ResourceAlertEventResource extends Resource
             TextEntry::make('threshold')->placeholder('-'),
             TextEntry::make('message')->columnSpanFull(),
             TextEntry::make('triggered_at')->dateTime(),
+            TextEntry::make('acknowledged_at')->dateTime()->placeholder('-'),
             TextEntry::make('resolved_at')->dateTime()->placeholder('-'),
             TextEntry::make('notification_count'),
         ])->columns(2);

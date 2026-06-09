@@ -39,6 +39,14 @@ return [
     'events' => [
         'title' => 'Alert Events',
         'queued' => 'Notification queued',
+        'acknowledge' => 'Acknowledge',
+        'acknowledged' => 'Alert acknowledged',
+        'acknowledged_at' => 'Acknowledged at',
+        'resolved' => 'Alert resolved',
+        'resolve' => 'Resolve',
+        'status_open' => 'Open',
+        'status_acknowledged' => 'Acknowledged',
+        'status_resolved' => 'Resolved',
     ],
     'dashboard' => [
         'title' => 'Resource Alerts Dashboard',

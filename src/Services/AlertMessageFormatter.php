@@ -51,18 +51,189 @@ class AlertMessageFormatter
         $title = $resolved ? $this->resolvedTitle($event) : $this->triggeredTitle($event);
         $body = $resolved ? $this->resolvedBody($event) : $this->triggeredBody($event);
 
+        $color = $resolved ? 0x22c55e : match ($event->severity->value) {
+            'critical' => 0xef4444,
+            'warning' => 0xf59e0b,
+            default => 0x3b82f6,
+        };
+
+        $fields = [
+            [
+                'name' => 'Target',
+                'value' => $this->target($event),
+                'inline' => true,
+            ],
+            [
+                'name' => 'Metric',
+                'value' => $this->metric($event),
+                'inline' => true,
+            ],
+        ];
+
+        if (!$event->metric->isBoolean()) {
+            $fields[] = [
+                'name' => 'Value',
+                'value' => $this->number($event->value) . '%',
+                'inline' => true,
+            ];
+
+            if ($event->threshold !== null) {
+                $fields[] = [
+                    'name' => 'Threshold',
+                    'value' => $event->rule->operator->value . ' ' . $this->number($event->threshold) . '%',
+                    'inline' => true,
+                ];
+            }
+        }
+
+        $fields[] = [
+            'name' => 'Duration',
+            'value' => $event->rule->duration_minutes . ' min',
+            'inline' => true,
+        ];
+
+        $fields[] = [
+            'name' => 'Severity',
+            'value' => ucfirst($event->severity->value),
+            'inline' => true,
+        ];
+
+        if ($event->triggered_at) {
+            $fields[] = [
+                'name' => 'Triggered',
+                'value' => $event->triggered_at->diffForHumans(),
+                'inline' => true,
+            ];
+        }
+
+        if ($event->acknowledged_at) {
+            $fields[] = [
+                'name' => 'Acknowledged',
+                'value' => $event->acknowledged_at->diffForHumans(),
+                'inline' => true,
+            ];
+        }
+
         return [
             'embeds' => [[
                 'title' => $title,
                 'description' => $body,
-                'color' => $resolved ? 0x22c55e : match ($event->severity->value) {
-                    'critical' => 0xef4444,
-                    'warning' => 0xf59e0b,
-                    default => 0x3b82f6,
-                },
+                'url' => $this->eventUrl($event),
+                'color' => $color,
+                'fields' => $fields,
                 'timestamp' => now()->toIso8601String(),
                 'footer' => ['text' => 'Pelican Resource Usage Alerts'],
+                'author' => $resolved ? [
+                    'name' => '✅ Resolved',
+                ] : [
+                    'name' => '🚨 Alert Triggered',
+                ],
             ]],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function telegramPayload(ResourceAlertEvent $event, bool $resolved = false): string
+    {
+        $title = $resolved ? $this->resolvedTitle($event) : $this->triggeredTitle($event);
+        $body = $resolved ? $this->resolvedBody($event) : $this->triggeredBody($event);
+
+        $statusIcon = match (true) {
+            $resolved => '✅',
+            $event->status->value === 'acknowledged' => '👁️',
+            $event->severity->value === 'critical' => '🔴',
+            $event->severity->value === 'warning' => '🟡',
+            default => '🔵',
+        };
+
+        $text = "{$statusIcon} *{$title}*\n\n{$body}";
+
+        if ($event->acknowledged_at) {
+            $text .= "\n\n👁️ Acknowledged: {$event->acknowledged_at->diffForHumans()}";
+        }
+
+        $url = $this->eventUrl($event);
+        if ($url !== '/') {
+            $text .= "\n\n🔗 [View Details]({$url})";
+        }
+
+        return $text;
+    }
+
+    /**
+     * @return array{blocks: array<int, array{type: string, text: array{type: string, text: string, text_type?: string, fields?: array<int, array{type: string, text: string}>}}>}}
+     */
+    public function slackPayload(ResourceAlertEvent $event, bool $resolved = false): array
+    {
+        $title = $resolved ? $this->resolvedTitle($event) : $this->triggeredTitle($event);
+        $body = $resolved ? $this->resolvedBody($event) : $this->triggeredBody($event);
+
+        $color = $resolved ? '#22c55e' : match ($event->severity->value) {
+            'critical' => '#ef4444',
+            'warning' => '#f59e0b',
+            default => '#3b82f6',
+        };
+
+        $fields = [];
+
+        if (!$event->metric->isBoolean() && $event->threshold !== null) {
+            $fields[] = [
+                'type' => 'mrkdwn',
+                'text' => "*Value:*\n{$this->number($event->value)}% → {$event->rule->operator->value} {$this->number($event->threshold)}%",
+            ];
+        }
+
+        $fields[] = [
+            'type' => 'mrkdwn',
+            'text' => "*Severity:*\n" . ucfirst($event->severity->value),
+        ];
+
+        $fields[] = [
+            'type' => 'mrkdwn',
+            'text' => "*Duration:*\n{$event->rule->duration_minutes} min",
+        ];
+
+        $contextParts = [":alarm_clock: Triggered {$event->triggered_at->diffForHumans()}"];
+        if ($event->acknowledged_at) {
+            $contextParts[] = ":white_check_mark: Acknowledged {$event->acknowledged_at->diffForHumans()}";
+        }
+
+        return [
+            'blocks' => [
+                [
+                    'type' => 'header',
+                    'text' => [
+                        'type' => 'plain_text',
+                        'text' => $title,
+                    ],
+                ],
+                [
+                    'type' => 'section',
+                    'text' => [
+                        'type' => 'mrkdwn',
+                        'text' => $body,
+                    ],
+                    'fields' => $fields,
+                ],
+                [
+                    'type' => 'section',
+                    'text' => [
+                        'type' => 'mrkdwn',
+                        'text' => "Status: *{$event->status->value}*",
+                    ],
+                ],
+                [
+                    'type' => 'context',
+                    'elements' => [
+                        [
+                            'type' => 'mrkdwn',
+                            'text' => implode(' | ', $contextParts),
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 

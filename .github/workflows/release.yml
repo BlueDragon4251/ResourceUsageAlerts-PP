@@ -1,0 +1,144 @@
+name: Release to Master
+
+on:
+  push:
+    branches:
+      - development
+    paths:
+      - 'plugin.json'
+      - 'src/**'
+      - 'lang/**'
+      - 'resources/**'
+      - 'routes/**'
+      - 'config/**'
+      - 'database/**'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+
+      - name: Extract version from plugin.json
+        id: version
+        run: |
+          VERSION=$(jq -r '.version' plugin.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Plugin version: $VERSION"
+
+      - name: Check if release already exists
+        id: check_release
+        run: |
+          TAG="${{ steps.version.outputs.version }}"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Copy plugin files
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          mkdir -p /tmp/release
+          cp -r plugin.json /tmp/release/
+          cp -r src /tmp/release/
+          cp -r lang /tmp/release/
+          cp -r resources /tmp/release/
+          cp -r routes /tmp/release/
+          cp -r config /tmp/release/
+          cp -r database /tmp/release/
+          cp -r phpstan.neon /tmp/release/
+          cp -r phpstan-baseline.neon /tmp/release/
+          cp -r pint.json /tmp/release/
+          cp CHANGELOG.md /tmp/release/
+          cp LICENSE /tmp/release/
+          cp README.md /tmp/release/
+
+      - name: Remove meta tag from plugin.json
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          cd /tmp/release
+          jq 'del(.meta)' plugin.json > plugin_tmp.json && mv plugin_tmp.json plugin.json
+          echo "--- plugin.json after removing meta ---"
+          cat plugin.json
+
+      - name: Configure git
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Checkout master
+        if: steps.check_release.outputs.exists == 'false'
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          path: master
+          fetch-depth: 0
+
+      - name: Update master branch
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          cd master
+          rm -rf plugin.json src lang resources routes config database phpstan.neon phpstan-baseline.neon pint.json CHANGELOG.md LICENSE README.md
+          cp -r /tmp/release/* .
+          ls -la
+          echo "--- Updated files on master ---"
+
+      - name: Commit and push to master
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          cd master
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Release v${{ steps.version.outputs.version }}"
+            git push origin master
+          fi
+
+      - name: Create zip file
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          cd /tmp/release
+          zip -r "/tmp/resourceusagealerts-v${{ steps.version.outputs.version }}.zip" .
+          echo "ZIP created:"
+          ls -la "/tmp/resourceusagealerts-v${{ steps.version.outputs.version }}.zip"
+
+      - name: Extract changelog for release
+        if: steps.check_release.outputs.exists == 'false'
+        id: changelog
+        run: |
+          cd /tmp/release
+          # Extract section from CHANGELOG.md for current version
+          VERSION="${{ steps.version.outputs.version }}"
+          NOTES=$(awk "/^## \[${VERSION}\]/{found=1; next} /^## \[/{if(found) exit} found{print}" CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            NOTES="Release v${VERSION}"
+          fi
+          # Write notes to file
+          echo "$NOTES" > /tmp/release_notes.md
+          cat /tmp/release_notes.md
+
+      - name: Create GitHub Release
+        if: steps.check_release.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: "Resource Usage Alerts v${{ steps.version.outputs.version }}"
+          body_path: /tmp/release_notes.md
+          draft: false
+          prerelease: false
+          files: /tmp/resourceusagealerts-v${{ steps.version.outputs.version }}.zip
+          repo_token: ${{ secrets.GITHUB_TOKEN }}

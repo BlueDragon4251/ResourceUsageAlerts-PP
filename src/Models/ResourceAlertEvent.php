@@ -30,6 +30,7 @@ class ResourceAlertEvent extends Model
             'threshold' => 'decimal:4',
             'triggered_at' => 'datetime',
             'resolved_at' => 'datetime',
+            'acknowledged_at' => 'datetime',
             'last_notified_at' => 'datetime',
             'notification_count' => 'integer',
             'context' => 'array',
@@ -59,5 +60,15 @@ class ResourceAlertEvent extends Model
     public function scopeOpen(Builder $query): Builder
     {
         return $query->where('status', AlertStatus::OPEN);
+    }
+
+    public function scopeAcknowledged(Builder $query): Builder
+    {
+        return $query->where('status', AlertStatus::ACKNOWLEDGED);
+    }
+
+    public function scopeUnresolved(Builder $query): Builder
+    {
+        return $query->whereIn('status', [AlertStatus::OPEN, AlertStatus::ACKNOWLEDGED]);
     }
 }

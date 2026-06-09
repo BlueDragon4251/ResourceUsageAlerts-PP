@@ -39,6 +39,14 @@ return [
     'events' => [
         'title' => 'Alarmereignisse',
         'queued' => 'Benachrichtigung eingereiht',
+        'acknowledge' => 'Bestätigen',
+        'acknowledged' => 'Alarm bestätigt',
+        'acknowledged_at' => 'Bestätigt am',
+        'resolved' => 'Alarm gelöst',
+        'resolve' => 'Lösen',
+        'status_open' => 'Offen',
+        'status_acknowledged' => 'Bestätigt',
+        'status_resolved' => 'Gelöst',
     ],
     'dashboard' => [
         'title' => 'Ressourcenalarm-Dashboard',
