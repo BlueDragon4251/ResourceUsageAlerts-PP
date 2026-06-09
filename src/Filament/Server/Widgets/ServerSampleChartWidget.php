@@ -7,13 +7,11 @@ namespace PelicanPlugins\ResourceUsageAlerts\Filament\Server\Widgets;
 use App\Models\Server;
 use Filament\Facades\Filament;
 use Filament\Widgets\Widget;
-use Illuminate\Support\Carbon;
-use PelicanPlugins\ResourceUsageAlerts\Enums\AlertMetric;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertSample;
 
 class ServerSampleChartWidget extends Widget
 {
-    protected static string $view = 'resourceusagealerts::widgets.alert-sample-chart';
+    protected string $view = 'resourceusagealerts::widgets.alert-sample-chart';
 
     public string $metric = 'cpu_percent';
 
@@ -33,6 +31,7 @@ class ServerSampleChartWidget extends Widget
     public function mount(?string $metric = null): void
     {
         $this->metric = $metric ?? 'cpu_percent';
+
         $this->loadData();
     }
 
@@ -52,7 +51,11 @@ class ServerSampleChartWidget extends Widget
             ->orderBy('sampled_at')
             ->get(['value', 'sampled_at']);
 
-        $this->lastValue = $samples->last()?->value ? number_format((float) $samples->last()->value, 1) : null;
+        $lastSample = $samples->last();
+
+        $this->lastValue = $lastSample?->value !== null
+            ? number_format((float) $lastSample->value, 1)
+            : null;
 
         foreach ($samples as $sample) {
             $this->labels[] = $sample->sampled_at->format('H:i');
@@ -67,6 +70,7 @@ class ServerSampleChartWidget extends Widget
     public function setMetric(string $metric): void
     {
         $this->metric = $metric;
+
         $this->loadData();
     }
 }
