@@ -12,7 +12,7 @@ use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
 
 class ServerAlertsAutoRefresh extends Widget
 {
-    protected static string $view = 'resourceusagealerts::widgets.auto-refresh-indicator';
+    protected string $view = 'resourceusagealerts::widgets.auto-refresh-indicator';
 
     public int $openCount = 0;
 
