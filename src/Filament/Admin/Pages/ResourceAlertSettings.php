@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PelicanPlugins\ResourceUsageAlerts\Filament\Admin\Pages;
 
-use App\Enums\Migrations\FilamentStatus;
 use App\Models\Setting;
+use BackedEnum;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -16,14 +16,15 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertSeverity;
+use UnitEnum;
 
 class ResourceAlertSettings extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'tabler-settings';
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-settings';
 
-    protected static ?string $navigationGroup = 'Resource Alerts';
+    protected static UnitEnum|string|null $navigationGroup = 'Resource Alerts';
 
     protected static ?string $navigationLabel = 'Settings';
 
@@ -75,7 +76,8 @@ class ResourceAlertSettings extends Page implements HasForms
                             ->numeric()
                             ->default(14)
                             ->minValue(1),
-                    ])->columns(2),
+                    ])
+                    ->columns(2),
 
                 Section::make('Permissions')
                     ->schema([
@@ -83,13 +85,22 @@ class ResourceAlertSettings extends Page implements HasForms
                             ->label(trans('resourceusagealerts::strings.settings.allow_user_rules')),
                         Toggle::make('alert_settings_allow_user_channels')
                             ->label(trans('resourceusagealerts::strings.settings.allow_user_channels')),
-                    ])->columns(2),
+                    ])
+                    ->columns(2),
 
                 Section::make('Notifications')
                     ->schema([
                         Select::make('alert_settings_minimum_severity')
                             ->label(trans('resourceusagealerts::strings.settings.minimum_severity'))
-                            ->options(collect(AlertSeverity::cases())->mapWithKeys(fn (AlertSeverity $s) => [$s->value => str($s->value)->title()->toString()])->all())
+                            ->options(
+                                collect(AlertSeverity::cases())
+                                    ->mapWithKeys(
+                                        fn (AlertSeverity $severity): array => [
+                                            $severity->value => str($severity->value)->title()->toString(),
+                                        ],
+                                    )
+                                    ->all(),
+                            )
                             ->default('warning'),
                         TextInput::make('alert_settings_global_discord_webhook')
                             ->label(trans('resourceusagealerts::strings.settings.global_discord_webhook'))
@@ -105,14 +116,15 @@ class ResourceAlertSettings extends Page implements HasForms
                         TextInput::make('alert_settings_vapid_subject')
                             ->label(trans('resourceusagealerts::strings.settings.vapid_subject'))
                             ->helperText(trans('resourceusagealerts::strings.settings.vapid_subject_help')),
-                        Grid::make(2)->schema([
-                            TextInput::make('alert_settings_vapid_public_key')
-                                ->label(trans('resourceusagealerts::strings.settings.vapid_public_key'))
-                                ->helperText(trans('resourceusagealerts::strings.settings.vapid_keys_help')),
-                            TextInput::make('alert_settings_vapid_private_key')
-                                ->label(trans('resourceusagealerts::strings.settings.vapid_private_key'))
-                                ->helperText(trans('resourceusagealerts::strings.settings.vapid_private_key_help')),
-                        ]),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('alert_settings_vapid_public_key')
+                                    ->label(trans('resourceusagealerts::strings.settings.vapid_public_key'))
+                                    ->helperText(trans('resourceusagealerts::strings.settings.vapid_keys_help')),
+                                TextInput::make('alert_settings_vapid_private_key')
+                                    ->label(trans('resourceusagealerts::strings.settings.vapid_private_key'))
+                                    ->helperText(trans('resourceusagealerts::strings.settings.vapid_private_key_help')),
+                            ]),
                     ]),
             ])
             ->statePath('data');
