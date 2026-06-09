@@ -1,20 +1,20 @@
 {
-    "id": "resourceusagealerts",
-    "name": "Resource Usage Alerts",
-    "author": "BlueWolf",
-    "version": "1.1.1",
-    "description": "Monitor server and node resources and send alerts when thresholds are exceeded.",
-    "category": "plugin",
-    "url": "https://github.com/BlueDragon4251/ResourceUsageAlerts-PP",
-    "update_url": null,
-    "namespace": "PelicanPlugins\\ResourceUsageAlerts",
-    "class": "ResourceUsageAlertsPlugin",
-    "panels": [
-        "admin",
-        "server"
-    ],
-    "panel_version": null,
-    "composer_packages": {
-        "minishlink/web-push": "^9.0"
-    }
+  "id": "resourceusagealerts",
+  "name": "Resource Usage Alerts",
+  "author": "BlueWolf",
+  "version": "1.2.0",
+  "description": "Monitor server and node resources and send alerts when thresholds are exceeded.",
+  "category": "plugin",
+  "url": "https://github.com/BlueDragon4251/ResourceUsageAlerts-PP",
+  "update_url": null,
+  "namespace": "PelicanPlugins\\ResourceUsageAlerts",
+  "class": "ResourceUsageAlertsPlugin",
+  "panels": [
+    "admin",
+    "server"
+  ],
+  "panel_version": null,
+  "composer_packages": {
+    "minishlink/web-push": "^9.0"
+  }
 }

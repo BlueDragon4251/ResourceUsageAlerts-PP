@@ -125,7 +125,7 @@ class AlertRuleEvaluator
 
             $event = ResourceAlertEvent::query()
                 ->where('rule_id', $rule->id)
-                ->where('status', AlertStatus::OPEN)
+                ->whereIn('status', [AlertStatus::OPEN, AlertStatus::ACKNOWLEDGED])
                 ->where('server_id', $serverId)
                 ->where('node_id', $nodeId)
                 ->lockForUpdate()
@@ -154,6 +154,8 @@ class AlertRuleEvaluator
             return $event->fresh(['rule', 'server', 'node', 'user']);
         });
 
+        // Only notify for newly created events or when cooldown expired.
+        // Acknowledged events won't trigger re-notification via shouldNotify() check.
         if ($created || $this->shouldNotify($event)) {
             $event->forceFill(['last_notified_at' => now()])->save();
             SendAlertNotificationJob::dispatch($event->id, false);
@@ -199,7 +201,7 @@ class AlertRuleEvaluator
     ): ?ResourceAlertEvent {
         $event = ResourceAlertEvent::query()
             ->where('rule_id', $rule->id)
-            ->where('status', AlertStatus::OPEN)
+            ->whereIn('status', [AlertStatus::OPEN, AlertStatus::ACKNOWLEDGED])
             ->where('server_id', $serverId)
             ->where('node_id', $nodeId)
             ->first();
