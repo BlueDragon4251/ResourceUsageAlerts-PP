@@ -30,7 +30,7 @@ class ResourceAlertSettings extends Page implements HasForms
 
     protected static ?string $title = 'Resource Alert Settings';
 
-    protected static string $view = 'filament.resources.pages.resource-alert-settings';
+    protected string $view = 'filament.resources.pages.resource-alert-settings';
 
     public ?array $data = [];
 
@@ -60,17 +60,20 @@ class ResourceAlertSettings extends Page implements HasForms
                         Toggle::make('alert_settings_enabled')
                             ->label(trans('resourceusagealerts::strings.settings.enabled'))
                             ->default(true),
+
                         TextInput::make('alert_settings_poll_interval')
                             ->label(trans('resourceusagealerts::strings.settings.poll_interval'))
                             ->numeric()
                             ->default(5)
                             ->minValue(1)
                             ->maxValue(60),
+
                         TextInput::make('alert_settings_sample_retention')
                             ->label(trans('resourceusagealerts::strings.settings.sample_retention'))
                             ->numeric()
                             ->default(7)
                             ->minValue(1),
+
                         TextInput::make('alert_settings_event_retention')
                             ->label(trans('resourceusagealerts::strings.settings.event_retention'))
                             ->numeric()
@@ -83,6 +86,7 @@ class ResourceAlertSettings extends Page implements HasForms
                     ->schema([
                         Toggle::make('alert_settings_allow_user_rules')
                             ->label(trans('resourceusagealerts::strings.settings.allow_user_rules')),
+
                         Toggle::make('alert_settings_allow_user_channels')
                             ->label(trans('resourceusagealerts::strings.settings.allow_user_channels')),
                     ])
@@ -102,6 +106,7 @@ class ResourceAlertSettings extends Page implements HasForms
                                     ->all(),
                             )
                             ->default('warning'),
+
                         TextInput::make('alert_settings_global_discord_webhook')
                             ->label(trans('resourceusagealerts::strings.settings.global_discord_webhook'))
                             ->url()
@@ -113,14 +118,17 @@ class ResourceAlertSettings extends Page implements HasForms
                     ->schema([
                         Toggle::make('alert_settings_push_enabled')
                             ->label(trans('resourceusagealerts::strings.settings.push_enabled')),
+
                         TextInput::make('alert_settings_vapid_subject')
                             ->label(trans('resourceusagealerts::strings.settings.vapid_subject'))
                             ->helperText(trans('resourceusagealerts::strings.settings.vapid_subject_help')),
+
                         Grid::make(2)
                             ->schema([
                                 TextInput::make('alert_settings_vapid_public_key')
                                     ->label(trans('resourceusagealerts::strings.settings.vapid_public_key'))
                                     ->helperText(trans('resourceusagealerts::strings.settings.vapid_keys_help')),
+
                                 TextInput::make('alert_settings_vapid_private_key')
                                     ->label(trans('resourceusagealerts::strings.settings.vapid_private_key'))
                                     ->helperText(trans('resourceusagealerts::strings.settings.vapid_private_key_help')),
