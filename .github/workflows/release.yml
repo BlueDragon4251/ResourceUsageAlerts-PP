@@ -1,6 +1,7 @@
 name: Release to Master
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - development
