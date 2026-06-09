@@ -9,6 +9,7 @@ use App\Livewire\AlertBannerCollection;
 use App\Models\Server;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
@@ -77,7 +78,10 @@ class OpenAlertBanners extends Component
                 $this->alertBanners->put($banner->getId(), $banner);
             }
         } catch (Throwable $exception) {
-            report($exception);
+            Log::debug('Resource Usage Alerts could not render alert banners.', [
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
         }
     }
 

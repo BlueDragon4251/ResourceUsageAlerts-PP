@@ -15,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Schema as SchemaFacade;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertMetric;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertSeverity;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertStatus;
@@ -22,13 +23,18 @@ use PelicanPlugins\ResourceUsageAlerts\Filament\Admin\Resources\ResourceAlertEve
 use PelicanPlugins\ResourceUsageAlerts\Filament\Admin\Resources\ResourceAlertEvents\Pages\ViewResourceAlertEvent;
 use PelicanPlugins\ResourceUsageAlerts\Jobs\SendAlertNotificationJob;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
-use Filament\Tables\Enums\ActionsPosition;
 
 class ResourceAlertEventResource extends Resource
 {
     protected static ?string $model = ResourceAlertEvent::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'tabler-alert-triangle';
+
+
+    public static function canAccess(): bool
+    {
+        return SchemaFacade::hasTable('resource_alert_events') && parent::canAccess();
+    }
 
     public static function getNavigationGroup(): ?string
     {
@@ -42,6 +48,10 @@ class ResourceAlertEventResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
+        if (!SchemaFacade::hasTable('resource_alert_events')) {
+            return null;
+        }
+
         return (string) static::getEloquentQuery()->where('status', AlertStatus::OPEN)->count() ?: null;
     }
 
