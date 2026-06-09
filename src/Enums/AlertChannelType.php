@@ -9,5 +9,7 @@ enum AlertChannelType: string
     case PANEL = 'panel';
     case DISCORD = 'discord';
     case EMAIL = 'email';
+    case TELEGRAM = 'telegram';
+    case SLACK = 'slack';
     case PUSH = 'push';
 }

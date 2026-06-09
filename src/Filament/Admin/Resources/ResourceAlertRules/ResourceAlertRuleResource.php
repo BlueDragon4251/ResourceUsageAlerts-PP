@@ -26,6 +26,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Schema as SchemaFacade;
 use Illuminate\Database\Eloquent\Collection;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertChannelType;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertMetric;
@@ -45,6 +46,12 @@ class ResourceAlertRuleResource extends Resource
     protected static string|\BackedEnum|null $navigationIcon = 'tabler-bell-ringing';
 
     protected static ?string $recordTitleAttribute = 'name';
+
+
+    public static function canAccess(): bool
+    {
+        return SchemaFacade::hasTable('resource_alert_rules') && parent::canAccess();
+    }
 
     public static function getNavigationGroup(): ?string
     {

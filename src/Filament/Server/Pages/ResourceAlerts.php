@@ -12,6 +12,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Schema;
 use Filament\Schemas\Components\Utilities\Get;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertChannelType;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertMetric;
@@ -39,7 +40,10 @@ class ResourceAlerts extends Page
     {
         $server = Filament::getTenant();
 
-        return $server instanceof Server
+        return Schema::hasTable('resource_alert_events')
+            && Schema::hasTable('resource_alert_rules')
+            && Schema::hasTable('resource_alert_channels')
+            && $server instanceof Server
             && user() !== null
             && app(PermissionService::class)->canViewServerAlerts(user(), $server);
     }
@@ -93,6 +97,8 @@ class ResourceAlerts extends Page
                             AlertChannelType::PANEL->value => 'Panel',
                             AlertChannelType::DISCORD->value => 'Discord',
                             AlertChannelType::EMAIL->value => 'Email',
+                            AlertChannelType::TELEGRAM->value => 'Telegram',
+                            AlertChannelType::SLACK->value => 'Slack',
                         ])
                         ->required()
                         ->live(),
@@ -100,8 +106,18 @@ class ResourceAlerts extends Page
                         ->url()
                         ->password()
                         ->revealable()
-                        ->required(fn (Get $get) => $get('type') === AlertChannelType::DISCORD->value)
-                        ->visible(fn (Get $get) => $get('type') === AlertChannelType::DISCORD->value),
+                        ->required(fn (Get $get) => in_array($get('type'), [AlertChannelType::DISCORD->value, AlertChannelType::SLACK->value], true))
+                        ->visible(fn (Get $get) => in_array($get('type'), [AlertChannelType::DISCORD->value, AlertChannelType::SLACK->value], true)),
+                    TextInput::make('bot_token')
+                        ->label('Telegram bot token')
+                        ->password()
+                        ->revealable()
+                        ->required(fn (Get $get) => $get('type') === AlertChannelType::TELEGRAM->value)
+                        ->visible(fn (Get $get) => $get('type') === AlertChannelType::TELEGRAM->value),
+                    TextInput::make('chat_id')
+                        ->label('Telegram chat ID')
+                        ->required(fn (Get $get) => $get('type') === AlertChannelType::TELEGRAM->value)
+                        ->visible(fn (Get $get) => $get('type') === AlertChannelType::TELEGRAM->value),
                     TextInput::make('email')
                         ->email()
                         ->required(fn (Get $get) => $get('type') === AlertChannelType::EMAIL->value)
@@ -116,6 +132,8 @@ class ResourceAlerts extends Page
                         'config' => [
                             'webhook_url' => $data['webhook_url'] ?? null,
                             'email' => $data['email'] ?? null,
+                            'bot_token' => $data['bot_token'] ?? null,
+                            'chat_id' => $data['chat_id'] ?? null,
                         ],
                         'enabled' => $data['enabled'] ?? true,
                     ]);
@@ -173,6 +191,8 @@ class ResourceAlerts extends Page
                     AlertChannelType::PANEL->value => 'Panel',
                     AlertChannelType::DISCORD->value => 'Discord',
                     AlertChannelType::EMAIL->value => 'Email',
+                    AlertChannelType::TELEGRAM->value => 'Telegram',
+                    AlertChannelType::SLACK->value => 'Slack',
                     AlertChannelType::PUSH->value => 'Browser Push',
                 ])
                 ->default([AlertChannelType::PANEL->value, AlertChannelType::PUSH->value]),

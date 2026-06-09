@@ -66,6 +66,44 @@ class AlertNotificationService
         }
     }
 
+
+    public function sendToTelegram(ResourceAlertEvent $event, string $botToken, string $chatId, bool $resolved = false): void
+    {
+        try {
+            Http::connectTimeout(2)
+                ->timeout((int) config('resourceusagealerts.telegram_timeout_seconds', 5))
+                ->retry(2, 250, throw: false)
+                ->post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+                    'chat_id' => $chatId,
+                    'text' => $this->formatter->telegramPayload($event, $resolved),
+                    'parse_mode' => 'Markdown',
+                    'disable_web_page_preview' => true,
+                ])
+                ->throw();
+        } catch (Throwable $exception) {
+            Log::warning('Resource Usage Alerts could not deliver a Telegram notification.', [
+                'event_id' => $event->id,
+                'exception' => $exception::class,
+            ]);
+        }
+    }
+
+    public function sendToSlack(ResourceAlertEvent $event, string $webhookUrl, bool $resolved = false): void
+    {
+        try {
+            Http::connectTimeout(2)
+                ->timeout((int) config('resourceusagealerts.slack_timeout_seconds', 5))
+                ->retry(2, 250, throw: false)
+                ->post($webhookUrl, $this->formatter->slackPayload($event, $resolved))
+                ->throw();
+        } catch (Throwable $exception) {
+            Log::warning('Resource Usage Alerts could not deliver a Slack notification.', [
+                'event_id' => $event->id,
+                'exception' => $exception::class,
+            ]);
+        }
+    }
+
     public function sendToEmail(ResourceAlertEvent $event, string $email, bool $resolved = false): void
     {
         if (!config('mail.default') || config('mail.default') === 'log') {
@@ -109,6 +147,19 @@ class AlertNotificationService
         if (in_array(AlertChannelType::DISCORD->value, $channels, true)) {
             foreach ($this->discordWebhooks($event) as $webhook) {
                 $this->sendToDiscord($event, $webhook, $resolved);
+            }
+        }
+
+
+        if (in_array(AlertChannelType::TELEGRAM->value, $channels, true)) {
+            foreach ($this->telegramTargets($event) as $target) {
+                $this->sendToTelegram($event, (string) $target['bot_token'], (string) $target['chat_id'], $resolved);
+            }
+        }
+
+        if (in_array(AlertChannelType::SLACK->value, $channels, true)) {
+            foreach ($this->slackWebhooks($event) as $webhook) {
+                $this->sendToSlack($event, $webhook, $resolved);
             }
         }
 
@@ -175,6 +226,86 @@ class AlertNotificationService
         ResourceAlertChannel::query()
             ->enabled()
             ->where('type', AlertChannelType::DISCORD)
+            ->whereIn('user_id', $recipientIds)
+            ->get()
+            ->each(function (ResourceAlertChannel $channel) use ($webhooks): void {
+                $url = data_get($channel->config, 'webhook_url');
+                if (is_string($url) && $url !== '') {
+                    $webhooks->push($url);
+                }
+            });
+
+        return $webhooks->filter()->unique()->values();
+    }
+
+
+    /**
+     * @return Collection<int, array{bot_token: string, chat_id: string}>
+     */
+    private function telegramTargets(ResourceAlertEvent $event): Collection
+    {
+        $targets = collect();
+        $globalBotToken = (string) config('resourceusagealerts.global_telegram_bot_token', '');
+        $globalChatId = (string) config('resourceusagealerts.global_telegram_chat_id', '');
+
+        if ($globalBotToken !== '' && $globalChatId !== '') {
+            try {
+                $targets->push([
+                    'bot_token' => str_starts_with($globalBotToken, 'encrypted:')
+                        ? Crypt::decryptString(substr($globalBotToken, 10))
+                        : $globalBotToken,
+                    'chat_id' => str_starts_with($globalChatId, 'encrypted:')
+                        ? Crypt::decryptString(substr($globalChatId, 10))
+                        : $globalChatId,
+                ]);
+            } catch (Throwable) {
+                Log::warning('Resource Usage Alerts global Telegram credentials could not be decrypted.');
+            }
+        }
+
+        $recipientIds = $this->recipients($event)->pluck('id');
+        ResourceAlertChannel::query()
+            ->enabled()
+            ->where('type', AlertChannelType::TELEGRAM)
+            ->whereIn('user_id', $recipientIds)
+            ->get()
+            ->each(function (ResourceAlertChannel $channel) use ($targets): void {
+                $botToken = data_get($channel->config, 'bot_token');
+                $chatId = data_get($channel->config, 'chat_id');
+
+                if (is_string($botToken) && $botToken !== '' && is_string($chatId) && $chatId !== '') {
+                    $targets->push([
+                        'bot_token' => $botToken,
+                        'chat_id' => $chatId,
+                    ]);
+                }
+            });
+
+        return $targets->unique(fn (array $target): string => $target['bot_token'] . ':' . $target['chat_id'])->values();
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    private function slackWebhooks(ResourceAlertEvent $event): Collection
+    {
+        $webhooks = collect();
+        $global = (string) config('resourceusagealerts.global_slack_webhook', '');
+
+        if ($global !== '') {
+            try {
+                $webhooks->push(str_starts_with($global, 'encrypted:')
+                    ? Crypt::decryptString(substr($global, 10))
+                    : $global);
+            } catch (Throwable) {
+                Log::warning('Resource Usage Alerts global Slack webhook could not be decrypted.');
+            }
+        }
+
+        $recipientIds = $this->recipients($event)->pluck('id');
+        ResourceAlertChannel::query()
+            ->enabled()
+            ->where('type', AlertChannelType::SLACK)
             ->whereIn('user_id', $recipientIds)
             ->get()
             ->each(function (ResourceAlertChannel $channel) use ($webhooks): void {

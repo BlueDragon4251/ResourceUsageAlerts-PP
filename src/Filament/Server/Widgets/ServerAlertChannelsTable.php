@@ -44,22 +44,19 @@ class ServerAlertChannelsTable extends TableWidget
             ->recordActions([
                 Action::make('test')
                     ->icon('tabler-send')
-                    ->visible(fn (ResourceAlertChannel $record) => $record->type === AlertChannelType::DISCORD && $record->enabled)
+                    ->visible(fn (ResourceAlertChannel $record) => in_array($record->type, [AlertChannelType::DISCORD, AlertChannelType::SLACK, AlertChannelType::TELEGRAM], true) && $record->enabled)
                     ->action(function (ResourceAlertChannel $record): void {
                         try {
                             $allowed = RateLimiter::attempt(
                                 "resource-alert-channel-test:{$record->id}:" . user()?->id,
                                 1,
                                 function () use ($record): void {
-                                    $url = data_get($record->config, 'webhook_url');
-                                    if (!is_string($url) || $url === '') {
-                                        throw new \RuntimeException('Missing webhook URL.');
-                                    }
-
-                                    Http::connectTimeout(2)
-                                        ->timeout((int) config('resourceusagealerts.discord_timeout_seconds', 5))
-                                        ->post($url, ['content' => 'Pelican Resource Usage Alerts test notification.'])
-                                        ->throw();
+                                    match ($record->type) {
+                                        AlertChannelType::DISCORD => $this->sendWebhookTest($record, ['content' => 'Pelican Resource Usage Alerts test notification.'], 'discord_timeout_seconds'),
+                                        AlertChannelType::SLACK => $this->sendWebhookTest($record, ['text' => 'Pelican Resource Usage Alerts test notification.'], 'slack_timeout_seconds'),
+                                        AlertChannelType::TELEGRAM => $this->sendTelegramTest($record),
+                                        default => null,
+                                    };
                                 },
                                 60
                             );
@@ -82,5 +79,37 @@ class ServerAlertChannelsTable extends TableWidget
                     ->action(fn (ResourceAlertChannel $record) => $record->update(['enabled' => !$record->enabled])),
                 DeleteAction::make(),
             ]);
+    }
+
+    private function sendWebhookTest(ResourceAlertChannel $record, array $payload, string $timeoutConfigKey): void
+    {
+        $url = data_get($record->config, 'webhook_url');
+        if (!is_string($url) || $url === '') {
+            throw new \RuntimeException('Missing webhook URL.');
+        }
+
+        Http::connectTimeout(2)
+            ->timeout((int) config("resourceusagealerts.{$timeoutConfigKey}", 5))
+            ->post($url, $payload)
+            ->throw();
+    }
+
+    private function sendTelegramTest(ResourceAlertChannel $record): void
+    {
+        $botToken = data_get($record->config, 'bot_token');
+        $chatId = data_get($record->config, 'chat_id');
+
+        if (!is_string($botToken) || $botToken === '' || !is_string($chatId) || $chatId === '') {
+            throw new \RuntimeException('Missing Telegram credentials.');
+        }
+
+        Http::connectTimeout(2)
+            ->timeout((int) config('resourceusagealerts.telegram_timeout_seconds', 5))
+            ->post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+                'chat_id' => $chatId,
+                'text' => 'Pelican Resource Usage Alerts test notification.',
+                'disable_web_page_preview' => true,
+            ])
+            ->throw();
     }
 }

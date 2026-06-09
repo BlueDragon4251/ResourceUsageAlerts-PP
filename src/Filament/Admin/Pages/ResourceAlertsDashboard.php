@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PelicanPlugins\ResourceUsageAlerts\Filament\Admin\Pages;
 
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Schema;
 use PelicanPlugins\ResourceUsageAlerts\Filament\Admin\Widgets\AlertStatsOverview;
 use PelicanPlugins\ResourceUsageAlerts\Filament\Admin\Widgets\AlertTrendChart;
 use PelicanPlugins\ResourceUsageAlerts\Filament\Admin\Widgets\RecentOpenAlerts;
@@ -17,6 +18,14 @@ class ResourceAlertsDashboard extends Page
     protected static ?int $navigationSort = 1;
 
     protected string $view = 'resourceusagealerts::filament.admin.pages.resource-alerts-dashboard';
+
+
+    public static function canAccess(): bool
+    {
+        return Schema::hasTable('resource_alert_events')
+            && Schema::hasTable('resource_alert_rules')
+            && parent::canAccess();
+    }
 
     public static function getNavigationGroup(): ?string
     {

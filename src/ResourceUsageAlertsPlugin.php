@@ -15,7 +15,6 @@ use Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Crypt;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertSeverity;
-use PelicanPlugins\ResourceUsageAlerts\Livewire\OpenAlertBanners;
 
 class ResourceUsageAlertsPlugin implements HasPluginSettings, Plugin
 {
@@ -47,8 +46,8 @@ class ResourceUsageAlertsPlugin implements HasPluginSettings, Plugin
             $panel->renderHook(
                 PanelsRenderHook::PAGE_START,
                 fn (): string => Blade::render(
-                    '@livewire($component, ["panelId" => $panelId])',
-                    ['component' => OpenAlertBanners::class, 'panelId' => $panel->getId()]
+                    '@livewire("resource-usage-alerts-open-alert-banners", ["panelId" => $panelId])',
+                    ['panelId' => $panel->getId()]
                 )
             );
         }
@@ -111,6 +110,22 @@ class ResourceUsageAlertsPlugin implements HasPluginSettings, Plugin
                 ->revealable()
                 ->dehydrated(fn (?string $state): bool => filled($state))
                 ->helperText(trans('resourceusagealerts::strings.settings.webhook_secret_help')),
+            TextInput::make('global_slack_webhook')
+                ->label(trans('resourceusagealerts::strings.settings.global_slack_webhook'))
+                ->password()
+                ->revealable()
+                ->dehydrated(fn (?string $state): bool => filled($state))
+                ->helperText(trans('resourceusagealerts::strings.settings.webhook_secret_help')),
+            TextInput::make('global_telegram_bot_token')
+                ->label(trans('resourceusagealerts::strings.settings.global_telegram_bot_token'))
+                ->password()
+                ->revealable()
+                ->dehydrated(fn (?string $state): bool => filled($state))
+                ->helperText(trans('resourceusagealerts::strings.settings.telegram_secret_help')),
+            TextInput::make('global_telegram_chat_id')
+                ->label(trans('resourceusagealerts::strings.settings.global_telegram_chat_id'))
+                ->dehydrated(fn (?string $state): bool => filled($state))
+                ->helperText(trans('resourceusagealerts::strings.settings.telegram_secret_help')),
             Select::make('minimum_notification_severity')
                 ->label(trans('resourceusagealerts::strings.settings.minimum_severity'))
                 ->options([
@@ -140,6 +155,18 @@ class ResourceUsageAlertsPlugin implements HasPluginSettings, Plugin
 
         if (filled($data['global_discord_webhook'] ?? null)) {
             $values['RESOURCE_USAGE_ALERTS_GLOBAL_DISCORD_WEBHOOK'] = 'encrypted:' . Crypt::encryptString((string) $data['global_discord_webhook']);
+        }
+
+        if (filled($data['global_slack_webhook'] ?? null)) {
+            $values['RESOURCE_USAGE_ALERTS_GLOBAL_SLACK_WEBHOOK'] = 'encrypted:' . Crypt::encryptString((string) $data['global_slack_webhook']);
+        }
+
+        if (filled($data['global_telegram_bot_token'] ?? null)) {
+            $values['RESOURCE_USAGE_ALERTS_GLOBAL_TELEGRAM_BOT_TOKEN'] = 'encrypted:' . Crypt::encryptString((string) $data['global_telegram_bot_token']);
+        }
+
+        if (filled($data['global_telegram_chat_id'] ?? null)) {
+            $values['RESOURCE_USAGE_ALERTS_GLOBAL_TELEGRAM_CHAT_ID'] = 'encrypted:' . Crypt::encryptString((string) $data['global_telegram_chat_id']);
         }
 
         if (filled($data['vapid_private_key'] ?? null)) {

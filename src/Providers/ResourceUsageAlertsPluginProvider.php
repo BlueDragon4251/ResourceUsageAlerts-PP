@@ -13,8 +13,10 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\View;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Livewire;
 use Illuminate\Support\ServiceProvider;
 use PelicanPlugins\ResourceUsageAlerts\Jobs\CleanupOldAlertSamplesJob;
+use PelicanPlugins\ResourceUsageAlerts\Livewire\OpenAlertBanners;
 use PelicanPlugins\ResourceUsageAlerts\Jobs\CollectResourceSamplesJob;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertChannel;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
@@ -58,6 +60,8 @@ class ResourceUsageAlertsPluginProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Livewire::component('resource-usage-alerts-open-alert-banners', OpenAlertBanners::class);
+
         EditProfile::registerCustomTabs(
             TabPosition::After,
             Tab::make('resource_alert_push')
