@@ -2,6 +2,14 @@
 
 Resource Usage Alerts is a Pelican Panel plugin for monitoring server and node resources. It stores durable alert history, waits for conditions to persist, applies notification cooldowns, and resolves alerts automatically after recovery.
 
+See [`CHANGELOG.md`](./CHANGELOG.md) for version history and notable changes.
+
+## License and usage rights
+
+Resource Usage Alerts is **source-available, not open source**. You may download and use the official plugin on your own Pelican Panel installation, but you may not redistribute it, reupload it, publish forks, publish modified versions, rename it, resell it, or release derivative versions.
+
+Official distribution is only allowed through channels approved by Nico Egger / BlueIT, such as the official GitHub repository and the Pelican Hub. See [`LICENSE`](./LICENSE) for the full terms.
+
 ## Requirements
 
 - Pelican Panel with PHP 8.3 or newer
@@ -167,3 +175,10 @@ The check command collects current samples, evaluates rules, and prints totals. 
 - Plugin UI missing: clear caches with `php artisan optimize:clear` and verify the plugin is enabled for `admin` and `server`.
 
 Failures from Wings, Discord, or mail are logged without exposing webhook URLs and do not interrupt other targets.
+
+
+## Languages
+
+Resource Usage Alerts includes English and German plugin translations.
+
+The plugin automatically uses German when the current Pelican/user locale starts with `de` such as `de`, `de_AT`, or `de_DE`. For every other locale, the plugin injects English strings as the fallback so users do not see untranslated German UI text.
