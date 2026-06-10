@@ -78,6 +78,11 @@ return [
         'recent_open' => 'Recent open alerts',
         'top_servers' => 'Top servers by alerts (30 days)',
         'alert_count' => 'Alerts',
+        'total_open' => 'Total open',
+        'critical' => 'Critical',
+        'warning' => 'Warning',
+        'resolved_24h' => 'Resolved (24h)',
+        'triggered_24h' => 'Triggered (24h)',
     ],
     'server' => [
         'title' => 'Resource Alerts',

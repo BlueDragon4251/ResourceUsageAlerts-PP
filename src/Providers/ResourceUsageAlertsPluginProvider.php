@@ -15,6 +15,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Lang;
 use PelicanPlugins\ResourceUsageAlerts\Jobs\CleanupOldAlertSamplesJob;
 use PelicanPlugins\ResourceUsageAlerts\Livewire\OpenAlertBanners;
 use PelicanPlugins\ResourceUsageAlerts\Jobs\CollectResourceSamplesJob;
@@ -60,6 +61,9 @@ class ResourceUsageAlertsPluginProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->loadTranslationsFrom(plugin_path('resourceusagealerts', 'lang'), 'resourceusagealerts');
+        $this->loadPluginTranslationsForCurrentLocale();
+
         Livewire::component('resource-usage-alerts-open-alert-banners', OpenAlertBanners::class);
 
         EditProfile::registerCustomTabs(
@@ -102,4 +106,38 @@ class ResourceUsageAlertsPluginProvider extends ServiceProvider
                 ->withoutOverlapping();
         });
     }
+
+    private function loadPluginTranslationsForCurrentLocale(): void
+    {
+        $locale = (string) app()->getLocale();
+        $targetLocale = str_starts_with(strtolower($locale), 'de') ? 'de' : 'en';
+        $basePath = plugin_path('resourceusagealerts', 'lang/' . $targetLocale);
+
+        foreach (glob($basePath . '/*.php') ?: [] as $file) {
+            $group = basename($file, '.php');
+            $lines = require $file;
+            if (is_array($lines)) {
+                Lang::addLines($this->flattenTranslations($lines, $group), $locale, 'resourceusagealerts');
+            }
+        }
+    }
+
+    /** @param array<string, mixed> $lines */
+    private function flattenTranslations(array $lines, string $prefix): array
+    {
+        $flattened = [];
+
+        foreach ($lines as $key => $value) {
+            $fullKey = $prefix . '.' . $key;
+            if (is_array($value)) {
+                $flattened += $this->flattenTranslations($value, $fullKey);
+                continue;
+            }
+
+            $flattened[$fullKey] = $value;
+        }
+
+        return $flattened;
+    }
+
 }

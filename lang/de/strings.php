@@ -78,6 +78,11 @@ return [
         'recent_open' => 'Aktuelle offene Alarme',
         'top_servers' => 'Server mit den meisten Alarmen (30 Tage)',
         'alert_count' => 'Alarme',
+        'total_open' => 'Offen gesamt',
+        'critical' => 'Kritisch',
+        'warning' => 'Warnung',
+        'resolved_24h' => 'Gelöst (24h)',
+        'triggered_24h' => 'Ausgelöst (24h)',
     ],
     'server' => [
         'title' => 'Ressourcenalarme',
