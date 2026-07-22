@@ -9,4 +9,5 @@ return [
     'alerts_delete' => 'Delete alert rules for this server.',
     'alerts_channels' => 'Manage personal notification channels.',
     'alerts_receive' => 'Receive special resource alert banners and notifications.',
+    'alerts_announcements' => 'Receive BlueIT announcements for Resource Usage Alerts.',
 ];

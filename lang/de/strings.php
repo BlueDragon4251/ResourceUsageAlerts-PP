@@ -50,6 +50,10 @@ return [
         'telegram_secret_help' => 'Leer lassen, um den aktuell verschlüsselten Telegram-Wert beizubehalten.',
         'webhook_secret_help' => 'Leer lassen, um den aktuell verschlüsselten Webhook beizubehalten.',
         'minimum_severity' => 'Minimale Benachrichtigungsstufe',
+        'blueit_announcements_enabled' => 'BlueIT-Ankündigungen aktivieren',
+        'blueit_announcements_url' => 'BlueIT-Ankündigungs-URL',
+        'blueit_announcements_secret' => 'BlueIT-Ankündigungs-Secret',
+        'blueit_announcements_secret_help' => 'Leer lassen, um das aktuelle HMAC-Secret beizubehalten.',
     ],
     'rules' => [
         'title' => 'Alarmregeln',
@@ -132,5 +136,12 @@ return [
         'delivery_failed' => 'Die Push-Benachrichtigung konnte serverseitig nicht versendet werden.',
         'unknown_status' => 'unbekannt',
         'secure_context_help' => 'Web Push benötigt HTTPS. Die Berechtigungsabfrage erscheint erst nach einem Klick auf „Push aktivieren“.',
+    ],
+    'announcements' => [
+        'inbox' => 'BlueIT-Ankündigungen',
+        'normal' => 'Ankündigung',
+        'update' => 'Update',
+        'open' => 'Öffnen',
+        'dismiss' => 'Schließen',
     ],
 ];

@@ -6,6 +6,24 @@ The changelog is maintained under the current release version. New changes are a
 
 This project is source-available, not open source. See [`LICENSE`](./LICENSE) for usage rights.
 
+## [1.3.5] - Unreleased
+
+### Added
+
+- Added plugin update feed metadata through `plugin.json` and `update.json`.
+
+### Changed
+
+- Changed the plugin version to `1.3.5`.
+
+### Fixed
+
+- Fixed BlueIT announcements using Pelican's top-right toast instead of the centered image popup, and suppressed legacy duplicate toasts.
+- Fixed BlueIT announcement popups being hidden behind the server console or missing from the general server overview.
+- Fixed BlueIT announcement close buttons not immediately hiding and persisting dismissal of the popup.
+- Fixed BlueIT announcement rendering breaking Alpine and Livewire navigation with `_x_teleportBack` errors by mounting the listener directly at Filament's body hook.
+- Fixed deleted or no-longer-applicable BlueIT announcements remaining visible after the remote announcement was removed.
+
 ## [1.2.1] - 2026-06-10
 
 ### Added

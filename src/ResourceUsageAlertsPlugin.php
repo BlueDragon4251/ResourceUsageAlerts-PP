@@ -11,8 +11,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Panel;
-use Filament\View\PanelsRenderHook;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Crypt;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertSeverity;
 
@@ -28,29 +26,31 @@ class ResourceUsageAlertsPlugin implements HasPluginSettings, Plugin
     public function register(Panel $panel): void
     {
         $id = str($panel->getId())->title();
+        $pagesPath = plugin_path($this->getId(), "src/Filament/$id/Pages");
+        $resourcesPath = plugin_path($this->getId(), "src/Filament/$id/Resources");
+        $widgetsPath = plugin_path($this->getId(), "src/Filament/$id/Widgets");
 
-        $panel->discoverPages(
-            plugin_path($this->getId(), "src/Filament/$id/Pages"),
-            "PelicanPlugins\\ResourceUsageAlerts\\Filament\\$id\\Pages"
-        );
-        $panel->discoverResources(
-            plugin_path($this->getId(), "src/Filament/$id/Resources"),
-            "PelicanPlugins\\ResourceUsageAlerts\\Filament\\$id\\Resources"
-        );
-        $panel->discoverWidgets(
-            plugin_path($this->getId(), "src/Filament/$id/Widgets"),
-            "PelicanPlugins\\ResourceUsageAlerts\\Filament\\$id\\Widgets"
-        );
-
-        if (in_array($panel->getId(), ['admin', 'server'], true)) {
-            $panel->renderHook(
-                PanelsRenderHook::PAGE_START,
-                fn (): string => Blade::render(
-                    '@livewire("resource-usage-alerts-open-alert-banners", ["panelId" => $panelId])',
-                    ['panelId' => $panel->getId()]
-                )
+        if (is_dir($pagesPath)) {
+            $panel->discoverPages(
+                $pagesPath,
+                "PelicanPlugins\\ResourceUsageAlerts\\Filament\\$id\\Pages"
             );
         }
+
+        if (is_dir($resourcesPath)) {
+            $panel->discoverResources(
+                $resourcesPath,
+                "PelicanPlugins\\ResourceUsageAlerts\\Filament\\$id\\Resources"
+            );
+        }
+
+        if (is_dir($widgetsPath)) {
+            $panel->discoverWidgets(
+                $widgetsPath,
+                "PelicanPlugins\\ResourceUsageAlerts\\Filament\\$id\\Widgets"
+            );
+        }
+
     }
 
     public function boot(Panel $panel): void {}
@@ -135,6 +135,19 @@ class ResourceUsageAlertsPlugin implements HasPluginSettings, Plugin
                 ])
                 ->default((string) config('resourceusagealerts.minimum_notification_severity', 'info'))
                 ->required(),
+            Toggle::make('blueit_announcements_enabled')
+                ->label(trans('resourceusagealerts::strings.settings.blueit_announcements_enabled'))
+                ->default($this->booleanConfig('resourceusagealerts.blueit_announcements_enabled', true)),
+            TextInput::make('blueit_announcements_url')
+                ->label(trans('resourceusagealerts::strings.settings.blueit_announcements_url'))
+                ->url()
+                ->default((string) config('resourceusagealerts.blueit_announcements_url', '')),
+            TextInput::make('blueit_announcements_secret')
+                ->label(trans('resourceusagealerts::strings.settings.blueit_announcements_secret'))
+                ->password()
+                ->revealable(false)
+                ->dehydrated(fn (?string $state): bool => filled($state))
+                ->helperText(trans('resourceusagealerts::strings.settings.blueit_announcements_secret_help')),
         ];
     }
 
@@ -151,6 +164,7 @@ class ResourceUsageAlertsPlugin implements HasPluginSettings, Plugin
             'RESOURCE_USAGE_ALERTS_VAPID_SUBJECT' => (string) ($data['vapid_subject'] ?? config('app.url')),
             'RESOURCE_USAGE_ALERTS_VAPID_PUBLIC_KEY' => (string) ($data['vapid_public_key'] ?? ''),
             'RESOURCE_USAGE_ALERTS_MINIMUM_SEVERITY' => AlertSeverity::tryFrom((string) ($data['minimum_notification_severity'] ?? 'info'))?->value ?? 'info',
+            'RESOURCE_USAGE_ALERTS_BLUEIT_ANNOUNCEMENTS_ENABLED' => (bool) ($data['blueit_announcements_enabled'] ?? true),
         ];
 
         if (filled($data['global_discord_webhook'] ?? null)) {
@@ -171,6 +185,14 @@ class ResourceUsageAlertsPlugin implements HasPluginSettings, Plugin
 
         if (filled($data['vapid_private_key'] ?? null)) {
             $values['RESOURCE_USAGE_ALERTS_VAPID_PRIVATE_KEY'] = 'encrypted:' . Crypt::encryptString((string) $data['vapid_private_key']);
+        }
+
+        if (filled($data['blueit_announcements_url'] ?? null)) {
+            $values['RESOURCE_USAGE_ALERTS_BLUEIT_ANNOUNCEMENTS_URL'] = rtrim(trim((string) $data['blueit_announcements_url']), '/');
+        }
+
+        if (filled($data['blueit_announcements_secret'] ?? null)) {
+            $values['RESOURCE_USAGE_ALERTS_BLUEIT_ANNOUNCEMENTS_SECRET'] = (string) $data['blueit_announcements_secret'];
         }
 
         $this->writeToEnvironment($values);

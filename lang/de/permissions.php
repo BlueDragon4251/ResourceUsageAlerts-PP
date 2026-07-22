@@ -9,4 +9,5 @@ return [
     'alerts_delete' => 'Alarmregeln für diesen Server löschen.',
     'alerts_channels' => 'Eigene Benachrichtigungskanäle verwalten.',
     'alerts_receive' => 'Spezielle Ressourcenalarm-Banner und Benachrichtigungen erhalten.',
+    'alerts_announcements' => 'BlueIT-Ankündigungen für Ressourcenalarme erhalten.',
 ];
