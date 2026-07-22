@@ -11,6 +11,7 @@ This project is source-available, not open source. See [`LICENSE`](./LICENSE) fo
 ### Added
 
 - Added plugin update feed metadata through `plugin.json` and `update.json`.
+- Added signed and localized BlueIT announcements with Pelican inbox delivery, centered image popups, CTA buttons, permissions, and plugin-version targeting.
 
 ### Changed
 
