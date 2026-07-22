@@ -11,12 +11,17 @@ use App\Models\Subuser;
 use App\Models\User;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\View;
+use Filament\Facades\Filament;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Lang;
 use PelicanPlugins\ResourceUsageAlerts\Jobs\CleanupOldAlertSamplesJob;
+use PelicanPlugins\ResourceUsageAlerts\Livewire\BlueItAnnouncements;
 use PelicanPlugins\ResourceUsageAlerts\Livewire\OpenAlertBanners;
 use PelicanPlugins\ResourceUsageAlerts\Jobs\CollectResourceSamplesJob;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertChannel;
@@ -28,6 +33,7 @@ use PelicanPlugins\ResourceUsageAlerts\Policies\ResourceAlertRulePolicy;
 use PelicanPlugins\ResourceUsageAlerts\Services\AlertMessageFormatter;
 use PelicanPlugins\ResourceUsageAlerts\Services\AlertNotificationService;
 use PelicanPlugins\ResourceUsageAlerts\Services\AlertRuleEvaluator;
+use PelicanPlugins\ResourceUsageAlerts\Services\BlueItAnnouncementService;
 use PelicanPlugins\ResourceUsageAlerts\Services\PermissionService;
 use PelicanPlugins\ResourceUsageAlerts\Services\ResourceSampleService;
 use PelicanPlugins\ResourceUsageAlerts\Services\WebPushNotificationService;
@@ -42,6 +48,7 @@ class ResourceUsageAlertsPluginProvider extends ServiceProvider
         $this->app->singleton(AlertNotificationService::class);
         $this->app->singleton(PermissionService::class);
         $this->app->singleton(WebPushNotificationService::class);
+        $this->app->singleton(BlueItAnnouncementService::class);
 
         Role::registerCustomDefaultPermissions('resourceAlertRule');
         Role::registerCustomPermissions([
@@ -53,7 +60,7 @@ class ResourceUsageAlertsPluginProvider extends ServiceProvider
 
         Subuser::registerCustomPermissions(
             'alerts',
-            ['view', 'create', 'update', 'delete', 'channels', 'receive'],
+            ['view', 'create', 'update', 'delete', 'channels', 'receive', 'announcements'],
             'resourceusagealerts::permissions',
             'tabler-bell-ringing'
         );
@@ -62,9 +69,27 @@ class ResourceUsageAlertsPluginProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadTranslationsFrom(plugin_path('resourceusagealerts', 'lang'), 'resourceusagealerts');
+        $this->loadViewsFrom(plugin_path('resourceusagealerts', 'resources/views'), 'resourceusagealerts');
         $this->loadPluginTranslationsForCurrentLocale();
 
+        Livewire::component('resource-usage-alerts-blueit-announcements', BlueItAnnouncements::class);
         Livewire::component('resource-usage-alerts-open-alert-banners', OpenAlertBanners::class);
+
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::BODY_START,
+            fn (): string => Blade::render(
+                '@livewire("resource-usage-alerts-blueit-announcements", ["panelId" => $panelId])',
+                ['panelId' => Filament::getCurrentPanel()?->getId() ?? 'app']
+            )
+        );
+
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::PAGE_START,
+            fn (): string => Blade::render(
+                '@livewire("resource-usage-alerts-open-alert-banners", ["panelId" => $panelId])',
+                ['panelId' => Filament::getCurrentPanel()?->getId() ?? 'app']
+            )
+        );
 
         EditProfile::registerCustomTabs(
             TabPosition::After,

@@ -27,6 +27,10 @@ return [
     'vapid_subject' => env('RESOURCE_USAGE_ALERTS_VAPID_SUBJECT', env('APP_URL')),
     'vapid_public_key' => env('RESOURCE_USAGE_ALERTS_VAPID_PUBLIC_KEY'),
     'vapid_private_key' => env('RESOURCE_USAGE_ALERTS_VAPID_PRIVATE_KEY'),
+    'blueit_announcements_enabled' => $boolean(env('RESOURCE_USAGE_ALERTS_BLUEIT_ANNOUNCEMENTS_ENABLED', true), true),
+    'blueit_announcements_url' => rtrim((string) env('RESOURCE_USAGE_ALERTS_BLUEIT_ANNOUNCEMENTS_URL', 'https://blueit42.vercel.app/api/announcements'), '/'),
+    'blueit_announcements_secret' => env('RESOURCE_USAGE_ALERTS_BLUEIT_ANNOUNCEMENTS_SECRET', 'blueit42-announcements-v1'),
+    'blueit_announcements_poll_seconds' => max(5, (int) env('RESOURCE_USAGE_ALERTS_BLUEIT_ANNOUNCEMENTS_POLL_SECONDS', 10)),
     'default_channels' => ['panel', 'push'],
     'chunk_size' => 100,
 ];

@@ -50,6 +50,10 @@ return [
         'telegram_secret_help' => 'Leave blank to retain the currently configured encrypted Telegram value.',
         'webhook_secret_help' => 'Leave blank to retain the currently configured encrypted webhook.',
         'minimum_severity' => 'Minimum notification severity',
+        'blueit_announcements_enabled' => 'Enable BlueIT announcements',
+        'blueit_announcements_url' => 'BlueIT announcements URL',
+        'blueit_announcements_secret' => 'BlueIT announcements secret',
+        'blueit_announcements_secret_help' => 'Leave blank to keep the current HMAC secret.',
     ],
     'rules' => [
         'title' => 'Alert Rules',
@@ -132,5 +136,12 @@ return [
         'delivery_failed' => 'The push notification could not be delivered by the server.',
         'unknown_status' => 'unknown',
         'secure_context_help' => 'Web Push requires HTTPS. The permission prompt only appears after clicking “Enable push”.',
+    ],
+    'announcements' => [
+        'inbox' => 'BlueIT announcements',
+        'normal' => 'Announcement',
+        'update' => 'Update',
+        'open' => 'Open',
+        'dismiss' => 'Dismiss',
     ],
 ];
