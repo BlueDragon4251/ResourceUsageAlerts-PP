@@ -10,11 +10,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('resource_alert_events')) {
+        if (! Schema::hasTable('resource_alert_events')) {
             return;
         }
 
-        if (!Schema::hasColumn('resource_alert_events', 'acknowledged_at')) {
+        if (! Schema::hasColumn('resource_alert_events', 'acknowledged_at')) {
             Schema::table('resource_alert_events', function (Blueprint $table): void {
                 $table->timestamp('acknowledged_at')->nullable()->after('resolved_at');
             });
@@ -23,7 +23,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (!Schema::hasTable('resource_alert_events')) {
+        if (! Schema::hasTable('resource_alert_events')) {
             return;
         }
 

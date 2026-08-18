@@ -16,12 +16,12 @@ use Throwable;
 class WebPushNotificationService
 {
     /**
-     * @param Collection<int, User> $users
-     * @param array<string, mixed> $payload
+     * @param  Collection<int, User>  $users
+     * @param  array<string, mixed>  $payload
      */
     public function sendToUsers(Collection $users, array $payload): void
     {
-        if (!$this->isConfigured() || $users->isEmpty()) {
+        if (! $this->isConfigured() || $users->isEmpty()) {
             return;
         }
 
@@ -35,7 +35,7 @@ class WebPushNotificationService
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      */
     public function send(ResourceAlertPushSubscription $stored, array $payload): bool
     {
@@ -43,12 +43,12 @@ class WebPushNotificationService
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return array{sent: bool, reason: string, status: ?int}
      */
     public function sendWithResult(ResourceAlertPushSubscription $stored, array $payload): array
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return ['sent' => false, 'reason' => 'not_configured', 'status' => null];
         }
 
@@ -130,7 +130,7 @@ class WebPushNotificationService
      * Browsers expose keys in the PushSubscription JSON shape, while web-push-php
      * expects its own normalized names.
      *
-     * @param array<string, mixed> $subscription
+     * @param  array<string, mixed>  $subscription
      * @return array<string, mixed>
      */
     private function normalizeSubscription(array $subscription): array
@@ -145,7 +145,7 @@ class WebPushNotificationService
 
     private function responseStatus(object $report): ?int
     {
-        if (!method_exists($report, 'getResponse')) {
+        if (! method_exists($report, 'getResponse')) {
             return null;
         }
 

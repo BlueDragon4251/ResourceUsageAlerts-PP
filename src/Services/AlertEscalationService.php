@@ -11,16 +11,6 @@ use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
 
 class AlertEscalationService
 {
-    private AlertRuleEvaluator $evaluator;
-
-    private AlertMessageFormatter $formatter;
-
-    public function __construct(AlertRuleEvaluator $evaluator, AlertMessageFormatter $formatter)
-    {
-        $this->evaluator = $evaluator;
-        $this->formatter = $formatter;
-    }
-
     /**
      * Escalate an event if it has been open/acknowledged for too long.
      */
@@ -36,7 +26,7 @@ class AlertEscalationService
         }
 
         $severityMap = $event->rule->config['escalation_severity'] ?? null;
-        if (!$severityMap) {
+        if (! $severityMap) {
             return;
         }
 

@@ -11,6 +11,7 @@ use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertRule;
@@ -35,6 +36,7 @@ class ServerAlertRulesTable extends TableWidget
                 TextColumn::make('threshold')->suffix('%')->placeholder('-'),
                 TextColumn::make('duration_minutes')->suffix(' min'),
                 TextColumn::make('severity')->badge(),
+                ViewColumn::make('recent_values')->label(trans('resourceusagealerts::strings.rules.recent_values'))->view('resourceusagealerts::tables.columns.rule-sparkline'),
                 IconColumn::make('enabled')->boolean(),
             ])
             ->recordActions([
@@ -45,7 +47,7 @@ class ServerAlertRulesTable extends TableWidget
                     ->visible(fn (ResourceAlertRule $record) => user() !== null
                         && app(PermissionService::class)->canUpdateServerRule(user(), $record, $server))
                     ->action(function (ResourceAlertRule $record): void {
-                        $record->update(['enabled' => !$record->enabled]);
+                        $record->update(['enabled' => ! $record->enabled]);
                         Notification::make()->success()->title(trans('resourceusagealerts::strings.actions.saved'))->send();
                     }),
                 DeleteAction::make()

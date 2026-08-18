@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace PelicanPlugins\ResourceUsageAlerts\Services;
 
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
-use PelicanPlugins\ResourceUsageAlerts\Enums\AlertScope;
-use PelicanPlugins\ResourceUsageAlerts\Enums\AlertSeverity;
+use Illuminate\Database\Eloquent\Collection;
+use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertChannel;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
-use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertNotificationChannel;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertRule;
 
 class TeamAlertService
@@ -17,7 +15,7 @@ class TeamAlertService
     /**
      * Get all rules visible to a user (based on their servers).
      */
-    public function getRulesForUser(User $user): \Illuminate\Database\Eloquent\Collection
+    public function getRulesForUser(User $user): Collection
     {
         $serverIds = $user->servers()->pluck('id');
         $nodeIds = $user->servers()->pluck('node_id')->unique();
@@ -34,7 +32,7 @@ class TeamAlertService
     /**
      * Get all events visible to a user.
      */
-    public function getEventsForUser(User $user, ?string $status = null): \Illuminate\Database\Eloquent\Collection
+    public function getEventsForUser(User $user, ?string $status = null): Collection
     {
         $serverIds = $user->servers()->pluck('id');
 
@@ -55,9 +53,9 @@ class TeamAlertService
     /**
      * Get notification channels for a user.
      */
-    public function getChannelsForUser(User $user): \Illuminate\Database\Eloquent\Collection
+    public function getChannelsForUser(User $user): Collection
     {
-        return ResourceAlertNotificationChannel::query()
+        return ResourceAlertChannel::query()
             ->where('user_id', $user->id)
             ->get();
     }
@@ -87,7 +85,7 @@ class TeamAlertService
      */
     public function getSharedGroups(): array
     {
-        return ResourceAlertNotificationChannel::query()
+        return ResourceAlertChannel::query()
             ->where('config->shared', true)
             ->get()
             ->groupBy('config.team_name')

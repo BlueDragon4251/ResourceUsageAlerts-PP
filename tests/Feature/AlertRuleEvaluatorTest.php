@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace PelicanPlugins\ResourceUsageAlerts\Tests\Feature;
 
-use App\Models\Node;
 use App\Models\Server;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertMetric;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertOperator;

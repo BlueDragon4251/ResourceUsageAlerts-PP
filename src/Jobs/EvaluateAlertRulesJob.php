@@ -13,6 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertRule;
 use PelicanPlugins\ResourceUsageAlerts\Services\AlertRuleEvaluator;
+use PelicanPlugins\ResourceUsageAlerts\Services\RuntimeHealthService;
 use Throwable;
 
 class EvaluateAlertRulesJob implements ShouldBeUnique, ShouldQueue
@@ -23,16 +24,21 @@ class EvaluateAlertRulesJob implements ShouldBeUnique, ShouldQueue
 
     public int $uniqueFor = 300;
 
-    public function handle(AlertRuleEvaluator $evaluator): void
+    public function handle(AlertRuleEvaluator $evaluator, RuntimeHealthService $health): void
     {
+        $startedAt = microtime(true);
+        $processed = 0;
+        $errors = 0;
         ResourceAlertRule::query()
             ->enabled()
             ->orderBy('id')
-            ->chunkById((int) config('resourceusagealerts.chunk_size', 100), function ($rules) use ($evaluator): void {
+            ->chunkById((int) config('resourceusagealerts.chunk_size', 100), function ($rules) use ($evaluator, &$processed, &$errors): void {
                 foreach ($rules as $rule) {
                     try {
                         $evaluator->evaluateRuleTargets($rule);
+                        $processed++;
                     } catch (Throwable $exception) {
+                        $errors++;
                         Log::warning('Resource Usage Alerts rule evaluation failed.', [
                             'rule_id' => $rule->id,
                             'exception' => $exception::class,
@@ -41,6 +47,7 @@ class EvaluateAlertRulesJob implements ShouldBeUnique, ShouldQueue
                     }
                 }
             });
+        $health->mark('evaluation', $processed, $errors, (int) ((microtime(true) - $startedAt) * 1000));
     }
 
     public function uniqueId(): string

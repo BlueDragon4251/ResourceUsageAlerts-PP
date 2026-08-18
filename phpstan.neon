@@ -1,4 +1,5 @@
 includes:
+    - ../pelican/vendor/larastan/larastan/extension.neon
     - phpstan-baseline.neon
 
 parameters:
@@ -10,4 +11,6 @@ parameters:
     scanDirectories: []
     ignoreErrors: []
     excludePaths:
-        - vendor
+        - vendor (?)
+    bootstrapFiles:
+        - tests/phpstan-bootstrap.php

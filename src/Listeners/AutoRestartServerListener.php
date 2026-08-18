@@ -6,6 +6,7 @@ namespace PelicanPlugins\ResourceUsageAlerts\Listeners;
 
 use App\Models\Server;
 use App\Repositories\Daemon\DaemonServerRepository;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertMetric;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertStatus;
@@ -26,16 +27,18 @@ class AutoRestartServerListener
             return;
         }
 
-        if (!$event->server instanceof Server) {
+        if (! $event->server instanceof Server) {
             return;
         }
 
-        if (!$this->getAutoRestartSetting($event->server)) {
+        if (! filter_var(config('resourceusagealerts.auto_restart_enabled', false), FILTER_VALIDATE_BOOLEAN)
+            || ! filter_var(data_get($event->rule->config, 'auto_restart.enabled', false), FILTER_VALIDATE_BOOLEAN)) {
             return;
         }
 
-        $maxRetries = $this->getMaxRetries($event->server);
-        $currentRetries = (int) data_get($event->context, 'auto_restart_attempts', 0);
+        $maxRetries = $this->getMaxRetries($event);
+        $cacheKey = 'resource-alerts:auto-restart:'.$event->server->id;
+        $currentRetries = (int) Cache::get($cacheKey.':attempts', 0);
 
         if ($currentRetries >= $maxRetries) {
             Log::warning('ResourceUsageAlerts: max auto-restart attempts reached.', [
@@ -47,8 +50,15 @@ class AutoRestartServerListener
             return;
         }
 
+        $lock = Cache::lock($cacheKey.':lock', 60);
+        $acquired = false;
         try {
+            if (! $lock->get()) {
+                return;
+            }
+            $acquired = true;
             $this->serverRepository->setServer($event->server)->power('start');
+            Cache::put($cacheKey.':attempts', $currentRetries + 1, now()->addMinutes((int) config('resourceusagealerts.auto_restart_cooldown_minutes', 30)));
 
             $event->forceFill([
                 'context' => array_merge($event->context ?? [], [
@@ -57,7 +67,6 @@ class AutoRestartServerListener
                     'auto_restart_at' => now()->toIso8601String(),
                 ]),
             ])->save();
-
             Log::info('ResourceUsageAlerts: auto-restarted crashed server.', [
                 'server_id' => $event->server->id,
                 'server_name' => $event->server->name,
@@ -70,16 +79,18 @@ class AutoRestartServerListener
                 'exception' => $exception::class,
                 'message' => $exception->getMessage(),
             ]);
+        } finally {
+            if ($acquired) {
+                $lock->release();
+            }
         }
     }
 
-    private function getAutoRestartSetting(Server $server): bool
+    private function getMaxRetries(ResourceAlertEvent $event): int
     {
-        return (bool) data_get($server->data ?? [], 'resource_alerts.auto_restart', false);
-    }
-
-    private function getMaxRetries(Server $server): int
-    {
-        return max(1, (int) data_get($server->data ?? [], 'resource_alerts.max_restart_attempts', 3));
+        return max(1, min(
+            (int) config('resourceusagealerts.auto_restart_max_attempts', 2),
+            (int) data_get($event->rule->config ?? [], 'auto_restart.max_attempts', 2)
+        ));
     }
 }

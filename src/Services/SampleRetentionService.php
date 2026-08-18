@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PelicanPlugins\ResourceUsageAlerts\Services;
 
-use Illuminate\Support\Facades\DB;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertMetric;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertSample;
 

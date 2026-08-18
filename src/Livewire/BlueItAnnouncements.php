@@ -33,13 +33,13 @@ class BlueItAnnouncements extends Component
     public function refreshAnnouncements(): void
     {
         try {
-            if (!auth()->check()) {
+            if (! auth()->check()) {
                 return;
             }
 
             $service = app(BlueItAnnouncementService::class);
             $server = $this->server();
-            if (!$service->canReceive(user(), $server)) {
+            if (! $service->canReceive(user(), $server)) {
                 $this->popupAnnouncements = [];
 
                 return;
@@ -53,9 +53,8 @@ class BlueItAnnouncements extends Component
                 ->map(fn (mixed $id): string => (string) $id)
                 ->all();
             $this->popupAnnouncements = collect($service->unreadFor(user(), $server))
-                ->filter(fn (array $announcement): bool =>
-                    in_array((string) $announcement['read_id'], $visibleIds, true)
-                    || !in_array((string) $announcement['read_id'], $this->sentAnnouncementIds, true)
+                ->filter(fn (array $announcement): bool => in_array((string) $announcement['read_id'], $visibleIds, true)
+                    || ! in_array((string) $announcement['read_id'], $this->sentAnnouncementIds, true)
                 )
                 ->values()
                 ->all();
@@ -65,7 +64,7 @@ class BlueItAnnouncements extends Component
                 $readId = (string) $announcement['read_id'];
 
                 try {
-                    if (!$service->wasDelivered(user(), $readId)) {
+                    if (! $service->wasDelivered(user(), $readId)) {
                         $service->sendToDatabase(user(), $announcement);
                         $service->markDelivered(user(), $readId);
                     }
@@ -93,7 +92,7 @@ class BlueItAnnouncements extends Component
 
     public function dismiss(string $announcementId): void
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return;
         }
 

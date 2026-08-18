@@ -13,34 +13,33 @@ class AlertMessageFormatter
 {
     public function triggeredTitle(ResourceAlertEvent $event): string
     {
-        return sprintf('%s %s Alert: %s', ucfirst($event->severity->value), $this->metric($event), $this->target($event));
+        return trans('resourceusagealerts::strings.messages.triggered_title', [
+            'severity' => trans('resourceusagealerts::strings.severity.'.$event->severity->value),
+            'metric' => $this->metric($event),
+            'target' => $this->target($event),
+        ]);
     }
 
     public function triggeredBody(ResourceAlertEvent $event): string
     {
         if ($event->metric->isBoolean()) {
-            return sprintf('%s is reporting %s for at least %d minute(s).', $this->target($event), $this->metric($event), $event->rule->duration_minutes);
+            return trans('resourceusagealerts::strings.messages.boolean_triggered', ['target' => $this->target($event), 'metric' => $this->metric($event), 'minutes' => $event->rule->duration_minutes]);
         }
 
-        return sprintf(
-            '%s has reported %s at %s%% for at least %d minute(s). Threshold: %s %s%%.',
-            $this->target($event),
-            $this->metric($event),
-            $this->number($event->value),
-            $event->rule->duration_minutes,
-            $event->rule->operator->value,
-            $this->number($event->threshold)
-        );
+        return trans('resourceusagealerts::strings.messages.numeric_triggered', [
+            'target' => $this->target($event), 'metric' => $this->metric($event), 'value' => $this->number($event->value),
+            'minutes' => $event->rule->duration_minutes, 'operator' => $event->rule->operator->value, 'threshold' => $this->number($event->threshold),
+        ]);
     }
 
     public function resolvedTitle(ResourceAlertEvent $event): string
     {
-        return sprintf('Resolved %s Alert: %s', $this->metric($event), $this->target($event));
+        return trans('resourceusagealerts::strings.messages.resolved_title', ['metric' => $this->metric($event), 'target' => $this->target($event)]);
     }
 
     public function resolvedBody(ResourceAlertEvent $event): string
     {
-        return sprintf('%s has returned to a normal state. Current value: %s.', $this->target($event), $this->displayValue($event));
+        return trans('resourceusagealerts::strings.messages.resolved_body', ['target' => $this->target($event), 'value' => $this->displayValue($event)]);
     }
 
     /**
@@ -51,56 +50,56 @@ class AlertMessageFormatter
         $title = $resolved ? $this->resolvedTitle($event) : $this->triggeredTitle($event);
         $body = $resolved ? $this->resolvedBody($event) : $this->triggeredBody($event);
 
-        $color = $resolved ? 0x22c55e : match ($event->severity->value) {
-            'critical' => 0xef4444,
-            'warning' => 0xf59e0b,
-            default => 0x3b82f6,
+        $color = $resolved ? 0x22C55E : match ($event->severity->value) {
+            'critical' => 0xEF4444,
+            'warning' => 0xF59E0B,
+            default => 0x3B82F6,
         };
 
         $fields = [
             [
-                'name' => 'Target',
+                'name' => trans('resourceusagealerts::strings.messages.target'),
                 'value' => $this->target($event),
                 'inline' => true,
             ],
             [
-                'name' => 'Metric',
+                'name' => trans('resourceusagealerts::strings.messages.metric'),
                 'value' => $this->metric($event),
                 'inline' => true,
             ],
         ];
 
-        if (!$event->metric->isBoolean()) {
+        if (! $event->metric->isBoolean()) {
             $fields[] = [
-                'name' => 'Value',
-                'value' => $this->number($event->value) . '%',
+                'name' => trans('resourceusagealerts::strings.messages.value'),
+                'value' => $this->number($event->value).'%',
                 'inline' => true,
             ];
 
             if ($event->threshold !== null) {
                 $fields[] = [
-                    'name' => 'Threshold',
-                    'value' => $event->rule->operator->value . ' ' . $this->number($event->threshold) . '%',
+                    'name' => trans('resourceusagealerts::strings.messages.threshold'),
+                    'value' => $event->rule->operator->value.' '.$this->number($event->threshold).'%',
                     'inline' => true,
                 ];
             }
         }
 
         $fields[] = [
-            'name' => 'Duration',
-            'value' => $event->rule->duration_minutes . ' min',
+            'name' => trans('resourceusagealerts::strings.messages.duration'),
+            'value' => $event->rule->duration_minutes.' min',
             'inline' => true,
         ];
 
         $fields[] = [
-            'name' => 'Severity',
-            'value' => ucfirst($event->severity->value),
+            'name' => trans('resourceusagealerts::strings.messages.severity'),
+            'value' => trans('resourceusagealerts::strings.severity.'.$event->severity->value),
             'inline' => true,
         ];
 
         if ($event->triggered_at) {
             $fields[] = [
-                'name' => 'Triggered',
+                'name' => trans('resourceusagealerts::strings.messages.triggered'),
                 'value' => $event->triggered_at->diffForHumans(),
                 'inline' => true,
             ];
@@ -108,7 +107,7 @@ class AlertMessageFormatter
 
         if ($event->acknowledged_at) {
             $fields[] = [
-                'name' => 'Acknowledged',
+                'name' => trans('resourceusagealerts::strings.messages.acknowledged'),
                 'value' => $event->acknowledged_at->diffForHumans(),
                 'inline' => true,
             ];
@@ -124,9 +123,9 @@ class AlertMessageFormatter
                 'timestamp' => now()->toIso8601String(),
                 'footer' => ['text' => 'Pelican Resource Usage Alerts'],
                 'author' => $resolved ? [
-                    'name' => '✅ Resolved',
+                    'name' => '✅ '.trans('resourceusagealerts::strings.events.status_resolved'),
                 ] : [
-                    'name' => '🚨 Alert Triggered',
+                    'name' => '🚨 '.trans('resourceusagealerts::strings.messages.triggered'),
                 ],
             ]],
         ];
@@ -151,12 +150,12 @@ class AlertMessageFormatter
         $text = "{$statusIcon} *{$title}*\n\n{$body}";
 
         if ($event->acknowledged_at) {
-            $text .= "\n\n👁️ Acknowledged: {$event->acknowledged_at->diffForHumans()}";
+            $text .= "\n\n👁️ ".trans('resourceusagealerts::strings.messages.acknowledged').": {$event->acknowledged_at->diffForHumans()}";
         }
 
         $url = $this->eventUrl($event);
         if ($url !== '/') {
-            $text .= "\n\n🔗 [View Details]({$url})";
+            $text .= "\n\n🔗 [".trans('resourceusagealerts::strings.messages.view_details')."]({$url})";
         }
 
         return $text;
@@ -178,7 +177,7 @@ class AlertMessageFormatter
 
         $fields = [];
 
-        if (!$event->metric->isBoolean() && $event->threshold !== null) {
+        if (! $event->metric->isBoolean() && $event->threshold !== null) {
             $fields[] = [
                 'type' => 'mrkdwn',
                 'text' => "*Value:*\n{$this->number($event->value)}% → {$event->rule->operator->value} {$this->number($event->threshold)}%",
@@ -187,12 +186,12 @@ class AlertMessageFormatter
 
         $fields[] = [
             'type' => 'mrkdwn',
-            'text' => "*Severity:*\n" . ucfirst($event->severity->value),
+            'text' => '*'.trans('resourceusagealerts::strings.messages.severity').":*\n".trans('resourceusagealerts::strings.severity.'.$event->severity->value),
         ];
 
         $fields[] = [
             'type' => 'mrkdwn',
-            'text' => "*Duration:*\n{$event->rule->duration_minutes} min",
+            'text' => '*'.trans('resourceusagealerts::strings.messages.duration').":*\n{$event->rule->duration_minutes} min",
         ];
 
         $contextParts = [":alarm_clock: Triggered {$event->triggered_at->diffForHumans()}"];
@@ -221,7 +220,7 @@ class AlertMessageFormatter
                     'type' => 'section',
                     'text' => [
                         'type' => 'mrkdwn',
-                        'text' => "Status: *{$event->status->value}*",
+                        'text' => trans('resourceusagealerts::strings.messages.status').": *{$event->status->value}*",
                     ],
                 ],
                 [
@@ -242,7 +241,7 @@ class AlertMessageFormatter
      */
     public function pushPayload(ResourceAlertEvent $event, bool $resolved = false): array
     {
-        return [
+        $payload = [
             'title' => $resolved ? $this->resolvedTitle($event) : $this->triggeredTitle($event),
             'body' => $resolved ? $this->resolvedBody($event) : $this->triggeredBody($event),
             'icon' => '/favicon.ico',
@@ -250,6 +249,18 @@ class AlertMessageFormatter
             'url' => $this->eventUrl($event),
             'tag' => "resource-alert-{$event->id}",
         ];
+
+        $sound = data_get($event->rule->config, 'push.sound');
+        if (is_string($sound) && $sound !== '') {
+            $payload['sound'] = $sound;
+        }
+        $actionUrl = data_get($event->rule->config, 'push.action_url');
+        if (is_string($actionUrl) && filter_var($actionUrl, FILTER_VALIDATE_URL)) {
+            $payload['url'] = $actionUrl;
+            $payload['actions'] = [['action' => 'open', 'title' => trans('resourceusagealerts::strings.messages.open')]];
+        }
+
+        return $payload;
     }
 
     private function target(ResourceAlertEvent $event): string
@@ -259,12 +270,14 @@ class AlertMessageFormatter
 
     private function metric(ResourceAlertEvent $event): string
     {
-        return str($event->metric->value)->replace('_', ' ')->title()->toString();
+        return $event->metric->label();
     }
 
     private function displayValue(ResourceAlertEvent $event): string
     {
-        return $event->metric->isBoolean() ? ((float) $event->value >= 1 ? 'active' : 'normal') : $this->number($event->value) . '%';
+        return $event->metric->isBoolean()
+            ? trans('resourceusagealerts::strings.messages.'.((float) $event->value >= 1 ? 'active' : 'normal'))
+            : $this->number($event->value).'%';
     }
 
     private function number(mixed $value): string

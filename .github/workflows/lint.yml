@@ -2,68 +2,47 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, master, developement]
   pull_request:
-    branches: [main]
+    branches: [main, master, developement]
 
 jobs:
-  phpstan:
-    name: PHPStan
+  quality:
+    name: PHP quality and tests
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout plugin
         uses: actions/checkout@v4
+        with:
+          path: plugin
+
+      - name: Checkout Pelican
+        uses: actions/checkout@v4
+        with:
+          repository: pelican-dev/panel
+          path: pelican
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.2"
-          tools: phpstan, composer
+          php-version: "8.3"
+          extensions: intl, mbstring, xml, ctype, json, bcmath, pdo, sqlite, zip
+          tools: composer, phpstan, pint
 
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
+      - name: Install Pelican dependencies
+        working-directory: pelican
+        run: composer install --no-interaction --prefer-dist --no-scripts
+
+      - name: Check formatting
+        run: pint --test plugin
 
       - name: Run PHPStan
-        run: phpstan analyse --no-progress
+        working-directory: plugin
+        run: phpstan analyse --no-progress --memory-limit=1G
 
-  pint:
-    name: Laravel Pint
-    runs-on: ubuntu-latest
+      - name: Run focused tests
+        run: php plugin/tests/run.php
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-          tools: pint, composer
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
-
-      - name: Run Pint (dry-run)
-        run: vendor/bin/pint --test
-
-  tests:
-    name: Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-          extensions: mbstring, xml, ctype, json, bcmath, pdo, sqlite
-          tools: composer
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
-
-      - name: Run Tests
-        run: vendor/bin/phpunit --testsuite=Feature
+      - name: Check translations
+        run: php plugin/tests/lang-keys.php

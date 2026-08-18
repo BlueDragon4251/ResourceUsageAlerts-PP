@@ -19,13 +19,13 @@ class GeneratePushKeysCommand extends Command
 
     public function handle(): int
     {
-        if (!class_exists(VAPID::class)) {
+        if (! class_exists(VAPID::class)) {
             $this->error('The minishlink/web-push Composer package is not installed.');
 
             return self::FAILURE;
         }
 
-        if (!$this->option('force') && filled(config('resourceusagealerts.vapid_private_key'))) {
+        if (! $this->option('force') && filled(config('resourceusagealerts.vapid_private_key'))) {
             $this->error('VAPID keys already exist. Use --force to replace them.');
 
             return self::FAILURE;
@@ -36,7 +36,7 @@ class GeneratePushKeysCommand extends Command
             'RESOURCE_USAGE_ALERTS_PUSH_ENABLED' => true,
             'RESOURCE_USAGE_ALERTS_VAPID_SUBJECT' => (string) config('app.url'),
             'RESOURCE_USAGE_ALERTS_VAPID_PUBLIC_KEY' => $keys['publicKey'],
-            'RESOURCE_USAGE_ALERTS_VAPID_PRIVATE_KEY' => 'encrypted:' . Crypt::encryptString($keys['privateKey']),
+            'RESOURCE_USAGE_ALERTS_VAPID_PRIVATE_KEY' => 'encrypted:'.Crypt::encryptString($keys['privateKey']),
         ]);
 
         $this->info('Browser push VAPID keys were generated and stored.');

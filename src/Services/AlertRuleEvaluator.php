@@ -7,20 +7,23 @@ namespace PelicanPlugins\ResourceUsageAlerts\Services;
 use App\Models\Node;
 use App\Models\Server;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertMetric;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertOperator;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertScope;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertStatus;
 use PelicanPlugins\ResourceUsageAlerts\Jobs\SendAlertNotificationJob;
+use PelicanPlugins\ResourceUsageAlerts\Listeners\AutoRestartServerListener;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertRule;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertSample;
 
 class AlertRuleEvaluator
 {
+    public function __construct(private readonly ?MaintenanceWindowService $maintenance = null) {}
+
     public function evaluateRule(ResourceAlertRule $rule): ?ResourceAlertEvent
     {
         return $this->evaluateRuleTargets($rule)->first();
@@ -31,7 +34,7 @@ class AlertRuleEvaluator
      */
     public function evaluateRuleTargets(ResourceAlertRule $rule): Collection
     {
-        if (!$rule->enabled) {
+        if (! $rule->enabled) {
             return collect();
         }
 
@@ -50,7 +53,7 @@ class AlertRuleEvaluator
 
     public function isConditionMet(ResourceAlertRule $rule, mixed $value): bool
     {
-        if (!is_numeric($value)) {
+        if (! is_numeric($value)) {
             return false;
         }
 
@@ -78,7 +81,7 @@ class AlertRuleEvaluator
     public function hasConditionPersisted(ResourceAlertRule $rule): bool
     {
         $target = $this->targetsFor($rule)->first();
-        if (!$target) {
+        if (! $target) {
             return false;
         }
 
@@ -87,7 +90,7 @@ class AlertRuleEvaluator
 
     public function shouldNotify(ResourceAlertEvent $event): bool
     {
-        if (!$event->last_notified_at) {
+        if (! $event->last_notified_at) {
             return true;
         }
 
@@ -98,7 +101,9 @@ class AlertRuleEvaluator
     {
         foreach ($this->targetsFor($rule) as $target) {
             $sample = $this->latestSample($rule, $target['server_id'], $target['node_id']);
-            if ($sample && !$this->isConditionMet($rule, $sample->value)) {
+            if ($sample
+                && $this->isSampleFresh($sample)
+                && ! $this->conditionMetForTarget($rule, $target['server_id'], $target['node_id'])) {
                 $this->resolveOpenEvent($rule, $target['server_id'], $target['node_id'], $sample);
             }
         }
@@ -106,16 +111,20 @@ class AlertRuleEvaluator
 
     private function evaluateTarget(ResourceAlertRule $rule, ?int $serverId, ?int $nodeId, ?int $userId): ?ResourceAlertEvent
     {
-        $sample = $this->latestSample($rule, $serverId, $nodeId);
-        if (!$sample || $sample->value === null) {
+        if (($this->maintenance ?? new MaintenanceWindowService)->activeFor($serverId, $nodeId, $userId)) {
             return null;
         }
 
-        if (!$this->isConditionMet($rule, $sample->value)) {
+        $sample = $this->latestSample($rule, $serverId, $nodeId);
+        if (! $sample || ! $this->isSampleFresh($sample) || $sample->value === null) {
+            return null;
+        }
+
+        if (! $this->conditionMetForTarget($rule, $serverId, $nodeId)) {
             return $this->resolveOpenEvent($rule, $serverId, $nodeId, $sample);
         }
 
-        if (!$this->hasTargetConditionPersisted($rule, $serverId, $nodeId)) {
+        if (! $this->hasTargetConditionPersisted($rule, $serverId, $nodeId)) {
             return null;
         }
 
@@ -131,7 +140,7 @@ class AlertRuleEvaluator
                 ->lockForUpdate()
                 ->first();
 
-            if (!$event) {
+            if (! $event) {
                 $created = true;
                 $event = new ResourceAlertEvent([
                     'rule_id' => $rule->id,
@@ -148,7 +157,10 @@ class AlertRuleEvaluator
 
             $event->fill([
                 'value' => $sample->value,
-                'context' => $sample->context,
+                'context' => array_merge($event->context ?? [], $sample->context ?? [], [
+                    'trigger_value' => $event->context['trigger_value'] ?? $sample->value,
+                    'last_value' => $sample->value,
+                ]),
             ])->save();
 
             return $event->fresh(['rule', 'server', 'node', 'user']);
@@ -159,6 +171,9 @@ class AlertRuleEvaluator
         if ($created || $this->shouldNotify($event)) {
             $event->forceFill(['last_notified_at' => now()])->save();
             SendAlertNotificationJob::dispatch($event->id, false);
+        }
+        if ($created) {
+            app(AutoRestartServerListener::class)->handle($event);
         }
 
         return $event;
@@ -179,7 +194,7 @@ class AlertRuleEvaluator
      */
     public function samplesMeetDuration(ResourceAlertRule $rule, Collection $samples, Carbon $now): bool
     {
-        if ($samples->isEmpty() || $samples->contains(fn (ResourceAlertSample $sample) => !$this->isConditionMet($rule, $sample->value))) {
+        if ($samples->isEmpty() || $samples->contains(fn (ResourceAlertSample $sample) => ! $this->isConditionMet($rule, $sample->value))) {
             return false;
         }
 
@@ -206,7 +221,7 @@ class AlertRuleEvaluator
             ->where('node_id', $nodeId)
             ->first();
 
-        if (!$event) {
+        if (! $event) {
             return null;
         }
 
@@ -214,7 +229,10 @@ class AlertRuleEvaluator
             'status' => AlertStatus::RESOLVED,
             'resolved_at' => now(),
             'value' => $sample->value,
-            'context' => $sample->context,
+            'context' => array_merge($event->context ?? [], $sample->context ?? [], [
+                'recovery_value' => $sample->value,
+                'duration_seconds' => $event->triggered_at?->diffInSeconds(now()),
+            ]),
         ])->save();
 
         SendAlertNotificationJob::dispatch($event->id, true);
@@ -227,10 +245,122 @@ class AlertRuleEvaluator
         return $this->sampleQuery($rule, $serverId, $nodeId)->latest('sampled_at')->first();
     }
 
+    /** @return array<int, array<string, mixed>> */
+    public function dryRun(ResourceAlertRule $rule): array
+    {
+        return $this->targetsFor($rule)->map(function (array $target) use ($rule): array {
+            $sample = $this->latestSample($rule, $target['server_id'], $target['node_id']);
+
+            return $target + [
+                'value' => $sample?->value,
+                'sampled_at' => $sample?->sampled_at?->toIso8601String(),
+                'fresh' => $sample ? $this->isSampleFresh($sample) : false,
+                'would_trigger' => $sample ? $this->conditionMetForTarget($rule, $target['server_id'], $target['node_id']) : false,
+            ];
+        })->all();
+    }
+
+    public function isSampleFresh(ResourceAlertSample $sample): bool
+    {
+        if ($sample->sampled_at === null) {
+            return false;
+        }
+
+        $maximumAge = max(1, (int) config('resourceusagealerts.poll_interval_minutes', 5))
+            + max(0, (int) config('resourceusagealerts.stale_metric_grace_minutes', 2));
+
+        return $sample->sampled_at->gte(now()->subMinutes($maximumAge));
+    }
+
+    public function conditionMetForTarget(ResourceAlertRule $rule, ?int $serverId, ?int $nodeId): bool
+    {
+        $primary = $this->latestSample($rule, $serverId, $nodeId);
+        if (! $primary || ! $this->isSampleFresh($primary) || ! $this->isConditionMet($rule, $primary->value)) {
+            return false;
+        }
+
+        if ($this->anomalyConfigured($rule) && ! $this->isAnomaly($rule, $serverId, $nodeId, $primary)) {
+            return false;
+        }
+
+        $conditions = array_values(array_filter(
+            (array) data_get($rule->config, 'conditions', []),
+            fn (mixed $condition): bool => is_array($condition) && is_string($condition['metric'] ?? null)
+        ));
+        if ($conditions === []) {
+            return true;
+        }
+
+        $results = collect($conditions)->map(function (array $condition) use ($serverId, $nodeId): bool {
+            $metric = AlertMetric::tryFrom((string) $condition['metric']);
+            $operator = AlertOperator::tryFrom((string) ($condition['operator'] ?? '>='));
+            if (! $metric || ! $operator) {
+                return false;
+            }
+
+            $sample = ResourceAlertSample::query()
+                ->where('metric', $metric)
+                ->when($serverId !== null, fn (Builder $query) => $query->where('server_id', $serverId))
+                ->when($serverId === null, fn (Builder $query) => $query->whereNull('server_id'))
+                ->when($nodeId !== null, fn (Builder $query) => $query->where('node_id', $nodeId))
+                ->when($nodeId === null, fn (Builder $query) => $query->whereNull('node_id'))
+                ->latest('sampled_at')
+                ->first();
+            if (! $sample || ! $this->isSampleFresh($sample)) {
+                return false;
+            }
+
+            $conditionRule = new ResourceAlertRule;
+            $conditionRule->forceFill([
+                'metric' => $metric,
+                'operator' => $operator,
+                'threshold' => $condition['threshold'] ?? null,
+            ]);
+
+            return $this->isConditionMet($conditionRule, $sample->value);
+        });
+
+        return strtolower((string) data_get($rule->config, 'condition_logic', 'and')) === 'or'
+            ? $results->contains(true)
+            : ! $results->contains(false);
+    }
+
+    public function isAnomaly(ResourceAlertRule $rule, ?int $serverId, ?int $nodeId, ResourceAlertSample $latest): bool
+    {
+        $window = max(15, (int) data_get($rule->config, 'anomaly.window_minutes', 60));
+        $minimumSamples = max(3, (int) data_get($rule->config, 'anomaly.minimum_samples', 6));
+        $multiplier = max(0.5, (float) data_get($rule->config, 'anomaly.standard_deviations', 3));
+        $values = $this->sampleQuery($rule, $serverId, $nodeId)
+            ->where('sampled_at', '>=', now()->subMinutes($window))
+            ->whereKeyNot($latest->id)
+            ->pluck('value')
+            ->filter(fn (mixed $value): bool => is_numeric($value))
+            ->map(fn (mixed $value): float => (float) $value)
+            ->values();
+        if ($values->count() < $minimumSamples) {
+            return false;
+        }
+
+        $mean = $values->avg();
+        $variance = $values->map(fn (float $value): float => ($value - $mean) ** 2)->avg();
+        $deviation = sqrt($variance);
+
+        return abs((float) $latest->value - $mean) >= max(0.0001, $deviation * $multiplier);
+    }
+
+    private function anomalyConfigured(ResourceAlertRule $rule): bool
+    {
+        return filter_var(data_get($rule->config, 'anomaly.enabled', false), FILTER_VALIDATE_BOOLEAN);
+    }
+
     private function sampleQuery(ResourceAlertRule $rule, ?int $serverId, ?int $nodeId): Builder
     {
         return ResourceAlertSample::query()
             ->where('metric', $rule->metric)
+            ->when(
+                $rule->metric === AlertMetric::CUSTOM && filled(data_get($rule->config, 'custom_metric_name')),
+                fn (Builder $query) => $query->where('context->name', (string) data_get($rule->config, 'custom_metric_name'))
+            )
             ->when($serverId !== null, fn (Builder $query) => $query->where('server_id', $serverId))
             ->when($serverId === null, fn (Builder $query) => $query->whereNull('server_id'))
             ->when($nodeId !== null, fn (Builder $query) => $query->where('node_id', $nodeId))
@@ -242,6 +372,14 @@ class AlertRuleEvaluator
      */
     private function targetsFor(ResourceAlertRule $rule): Collection
     {
+        if ($rule->scope === AlertScope::GLOBAL && in_array($rule->metric, [
+            AlertMetric::QUEUE_FAILED_JOBS,
+            AlertMetric::QUEUE_OLDEST_JOB_AGE,
+            AlertMetric::CUSTOM,
+        ], true)) {
+            return collect([['server_id' => null, 'node_id' => null, 'user_id' => null]]);
+        }
+
         if ($rule->scope === AlertScope::NODE || $rule->metric === AlertMetric::NODE_OFFLINE) {
             $nodes = match ($rule->scope) {
                 AlertScope::NODE => Node::query()->whereKey($rule->node_id)->get(),

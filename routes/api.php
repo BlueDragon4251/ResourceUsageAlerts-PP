@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use PelicanPlugins\ResourceUsageAlerts\Http\Controllers\AlertApiController;
+use PelicanPlugins\ResourceUsageAlerts\Http\Controllers\ExternalMetricController;
+
+Route::post('/api/resource-alerts/metrics', ExternalMetricController::class)
+    ->middleware('throttle:30,1');
 
 Route::prefix('api')->middleware(['auth:api', 'throttle:60,1'])->group(function (): void {
     Route::prefix('alerts')->group(function (): void {

@@ -2,11 +2,49 @@
 
 All notable changes to Resource Usage Alerts are documented in this file.
 
-The changelog is maintained under the current release version. New changes are added to the latest version section until the project owner explicitly requests a version bump.
+Released versions are immutable. Every new change is documented under a new version section.
 
 This project is source-available, not open source. See [`LICENSE`](./LICENSE) for usage rights.
 
-## [1.3.5] - Unreleased
+## [1.3.6] - 2026-08-18
+
+### Added
+
+- Added signed custom webhooks with HMAC timestamp/nonce headers, optional previous-secret signatures during key rotation, configurable domain allowlisting, and private/reserved network blocking.
+- Added notification-channel audit records that store actor, server, action, channel type, and changed field names without storing channel secrets.
+- Added persistent incident comments and an incident timeline to the admin event detail page.
+- Added a dashboard scheduler/queue health widget and a `resource-alerts:doctor` command for migrations, freshness, queue, push, and encrypted-secret checks.
+- Added configurable stale-metric detection and dashboard visibility for stale samples.
+- Added per-target backoff, chunked unique collection/evaluation, manual run summaries, and delivery-attempt tracking.
+- Added maintenance windows, compound AND/OR conditions, rolling anomaly detection, escalation channels/severity, notification groups, and on-call rotation.
+- Added network, disk I/O, inode, backup age/duration, swap, OOM, process, SSL, Wings, queue-health, and authenticated custom metrics.
+- Added ntfy, Gotify, Matrix, payload templates, per-channel cooldowns, push sound/actions, and bounded automatic crash restart policies.
+- Added MTTA/MTTR, alert heatmap, per-rule SVG sample previews, incident before/trigger/recovery context, filtered CSV/JSON exports, and weekly reports.
+- Added token-protected status pages with incident history and Atom feed.
+- Added rule dry-run, clone/severity bulk actions, UI/CLI rule import/export, owner dashboard, and first-install checklist.
+- Added translation QA, payload-redaction coverage, Larastan/PHPStan/Pint configuration, and expanded focused tests.
+
+### Changed
+
+- Limited browser push subscriptions per user and automatically pruned older subscriptions beyond the configured limit.
+- Changed panel notifications to render in each recipient's locale with English fallback for non-German locales.
+- Changed advanced admin resources to require root-administrator access.
+
+### Fixed
+
+- Fixed a panel-wide HTTP 500 on Pelican `1.0.0-beta36` and newer by implementing the new plugin settings data contract while preserving compatibility with earlier supported betas.
+- Fixed push endpoints being transferable between users when the same endpoint hash was submitted by another account.
+- Fixed notification channels created for one server being reused for alerts from other servers owned by the same user.
+- Fixed outdated samples triggering new alerts or resolving existing incidents after collection stopped.
+- Fixed the team alert service querying a notification-channel table that has never existed instead of the encrypted resource alert channel table.
+- Removed unused placeholder channel/cooldown services that queried the same non-existent table and were never connected to the active notification pipeline.
+- Fixed plugin Artisan commands not being registered by the service provider.
+- Fixed release and CI workflows ignoring relevant `developement`, changelog, update-feed, test, README, and workflow-only changes.
+- Fixed the release workflow checking for `1.3.5` while creating `v1.3.5`, omitting `update.json` from release packages, and using CI commands that required a non-existent plugin `composer.json`/PHPUnit setup.
+- Fixed fixed-English alert titles, bodies, payload labels, status labels, weekdays, and advanced resource labels.
+- Fixed automatic restart locks not being released reliably after failed daemon calls.
+
+## [1.3.5] - 2026-07-22
 
 ### Added
 
