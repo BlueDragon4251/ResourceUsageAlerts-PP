@@ -1,16 +1,15 @@
 {
     "preset": "laravel",
-    "rules": [
-        "@PSR12",
-        "array_syntax": ["syntax" => "short"],
+    "rules": {
+        "array_syntax": {"syntax": "short"},
         "no_unused_imports": true,
-        "ordered_imports": [
+        "ordered_imports": {
             "sort_algorithm": "alpha"
-        ],
+        },
         "trailing_comma_in_multiline": true,
         "single_quote": true,
         "declare_strict_types": true
-    ],
+    },
     "exclude": [
         "vendor"
     ]

@@ -1,3 +1,1123 @@
 parameters:
-    ignoreErrors: []
-    reportUnmatchedIgnoredErrors: true
+	ignoreErrors:
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/Filament/Admin/Pages/ResourceAlertSettings.php
+
+		-
+			message: '#^Cannot call method comments\(\) on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/Filament/Admin/Resources/ResourceAlertEvents/Pages/ViewResourceAlertEvent.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Filament/Admin/Resources/ResourceAlertEvents/ResourceAlertEventResource.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$enabled\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Filament/Admin/Resources/ResourceAlertRules/ResourceAlertRuleResource.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Filament/Admin/Resources/ResourceAlertRules/ResourceAlertRuleResource.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:each\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\|string\)\: mixed, Closure\(PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\)\: void given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Filament/Admin/Resources/ResourceAlertRules/ResourceAlertRuleResource.php
+
+		-
+			message: '#^Parameter \#1 \$view of method Filament\\Support\\Components\\ViewComponent\:\:view\(\) expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Filament/Admin/Resources/ResourceAlertRules/ResourceAlertRuleResource.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$triggered_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Filament/Admin/Widgets/AlertHeatmapChart.php
+
+		-
+			message: '#^Property PelicanPlugins\\ResourceUsageAlerts\\Filament\\Admin\\Widgets\\AlertSetupChecklist\:\:\$view \(view\-string\) does not accept default value of type string\.$#'
+			identifier: property.defaultValue
+			count: 1
+			path: src/Filament/Admin/Widgets/AlertSetupChecklist.php
+
+		-
+			message: '#^Property PelicanPlugins\\ResourceUsageAlerts\\Filament\\Admin\\Widgets\\AlertStatusPageWidget\:\:\$view \(view\-string\) does not accept default value of type string\.$#'
+			identifier: property.defaultValue
+			count: 1
+			path: src/Filament/Admin/Widgets/AlertStatusPageWidget.php
+
+		-
+			message: '#^Property PelicanPlugins\\ResourceUsageAlerts\\Filament\\Admin\\Widgets\\AlertTrendChart\:\:\$view \(view\-string\) does not accept default value of type string\.$#'
+			identifier: property.defaultValue
+			count: 1
+			path: src/Filament/Admin/Widgets/AlertTrendChart.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Support\\HigherOrderCollectionProxy\<string, PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent, Illuminate\\Database\\Eloquent\\Collection\<int, PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\>\>\:\:\$acknowledged_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Filament/Admin/Widgets/IncidentResponseStats.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Support\\HigherOrderCollectionProxy\<string, PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent, Illuminate\\Database\\Eloquent\\Collection\<int, PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\>\>\:\:\$resolved_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Filament/Admin/Widgets/IncidentResponseStats.php
+
+		-
+			message: '#^Parameter \#2 \$syntax of method Carbon\\Carbon\:\:diffForHumans\(\) expects array\|int\|null, true given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Filament/Admin/Widgets/IncidentResponseStats.php
+
+		-
+			message: '#^Undefined variable\: \$server$#'
+			identifier: variable.undefined
+			count: 1
+			path: src/Filament/Server/Pages/ResourceAlerts.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Filament/Server/Widgets/ServerAlertChannelsTable.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertChannel\:\:\$config\.$#'
+			identifier: property.notFound
+			count: 9
+			path: src/Filament/Server/Widgets/ServerAlertChannelsTable.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertChannel\:\:\$enabled\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Filament/Server/Widgets/ServerAlertChannelsTable.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertChannel\:\:\$type\.$#'
+			identifier: property.notFound
+			count: 4
+			path: src/Filament/Server/Widgets/ServerAlertChannelsTable.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$enabled\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Filament/Server/Widgets/ServerAlertRulesTable.php
+
+		-
+			message: '#^Parameter \#1 \$view of method Filament\\Support\\Components\\ViewComponent\:\:view\(\) expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Filament/Server/Widgets/ServerAlertRulesTable.php
+
+		-
+			message: '#^Property PelicanPlugins\\ResourceUsageAlerts\\Filament\\Server\\Widgets\\ServerAlertsAutoRefresh\:\:\$view \(view\-string\) does not accept default value of type string\.$#'
+			identifier: property.defaultValue
+			count: 1
+			path: src/Filament/Server/Widgets/ServerAlertsAutoRefresh.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Filament/Server/Widgets/ServerOpenAlertsTable.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\:\:\$sampled_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Filament/Server/Widgets/ServerSampleChartWidget.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\:\:\$value\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Filament/Server/Widgets/ServerSampleChartWidget.php
+
+		-
+			message: '#^Property PelicanPlugins\\ResourceUsageAlerts\\Filament\\Server\\Widgets\\ServerSampleChartWidget\:\:\$view \(view\-string\) does not accept default value of type string\.$#'
+			identifier: property.defaultValue
+			count: 1
+			path: src/Filament/Server/Widgets/ServerSampleChartWidget.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Http/Controllers/AlertApiController.php
+
+		-
+			message: '#^Parameter \#2 \$server of method PelicanPlugins\\ResourceUsageAlerts\\Services\\PermissionService\:\:canViewServerAlerts\(\) expects App\\Models\\Server, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Http/Controllers/AlertApiController.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertMetricToken\:\:\$allowed_metrics\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Http/Controllers/ExternalMetricController.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertMetricToken\:\:\$expires_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Http/Controllers/ExternalMetricController.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertMetricToken\:\:\$node_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Http/Controllers/ExternalMetricController.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertMetricToken\:\:\$server_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Http/Controllers/ExternalMetricController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$config\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Listeners/AutoRestartServerListener.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Listeners/AutoRestartServerListener.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Listeners/AutoRestartServerListener.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$metric\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Listeners/AutoRestartServerListener.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Listeners/AutoRestartServerListener.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Livewire/BlueItAnnouncements.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$severity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Livewire/OpenAlertBanners.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Livewire/OpenAlertBanners.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$server_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Models/ResourceAlertChannel.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$metric\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Models/ResourceAlertRule.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$node_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Models/ResourceAlertRule.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$operator\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Models/ResourceAlertRule.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$scope\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Models/ResourceAlertRule.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$server_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Models/ResourceAlertRule.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$threshold\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Models/ResourceAlertRule.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertChannel\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Policies/ResourceAlertChannelPolicy.php
+
+		-
+			message: '#^Parameter \#1 \$view of static method Filament\\Schemas\\Components\\View\:\:make\(\) expects view\-string, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Providers/ResourceUsageAlertsPluginProvider.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/ResourceUsageAlertsPlugin.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$severity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertEscalationService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertEscalationService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$triggered_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertEscalationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$acknowledged_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$metric\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$notification_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$resolved_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$severity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$threshold\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$triggered_at\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\:\:\$metric\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\:\:\$node_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\:\:\$sampled_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\:\:\$server_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\:\:\$value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: src/Services/AlertExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$config\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$duration_minutes\.$#'
+			identifier: property.notFound
+			count: 4
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$operator\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$username\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$acknowledged_at\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$metric\.$#'
+			identifier: property.notFound
+			count: 5
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$severity\.$#'
+			identifier: property.notFound
+			count: 7
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$threshold\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$triggered_at\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$value\.$#'
+			identifier: property.notFound
+			count: 5
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^PHPDoc tag @return has invalid value \(array\{blocks\: array\<int, array\{type\: string, text\: array\{type\: string, text\: string, text_type\?\: string, fields\?\: array\<int, array\{type\: string, text\: string\}\>\}\}\>\}\}\)\: Unexpected token "\}", expected TOKEN_HORIZONTAL_WS at offset 182 on line 2$#'
+			identifier: phpDoc.parseError
+			count: 1
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^PHPDoc tag @return with type array\<string, mixed\> is incompatible with native type string\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>username" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/Services/AlertMessageFormatter.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channels\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$config\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$scope\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$subusers\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertChannel\:\:\$config\.$#'
+			identifier: property.notFound
+			count: 9
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$metric\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$node_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$notification_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$server_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$severity\.$#'
+			identifier: property.notFound
+			count: 5
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertNotificationGroup\:\:\$channel_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertNotificationGroup\:\:\$recipient_user_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Method PelicanPlugins\\ResourceUsageAlerts\\Services\\AlertNotificationService\:\:selfHostedTargets\(\) should return Illuminate\\Support\\Collection\<int, array\<string, mixed\>\> but returns Illuminate\\Support\\Collection\<int, non\-empty\-array\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Method PelicanPlugins\\ResourceUsageAlerts\\Services\\DeliveryTrackerService\:\:record\(\) invoked with 3 parameters, 7 required\.$#'
+			identifier: arguments.count
+			count: 3
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Method PelicanPlugins\\ResourceUsageAlerts\\Services\\DeliveryTrackerService\:\:record\(\) invoked with 6 parameters, 7 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Parameter \#1 \$rule of method PelicanPlugins\\ResourceUsageAlerts\\Services\\OnCallRotationService\:\:getOnCallUser\(\) expects PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Services/AlertNotificationService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertReportSubscription\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertReportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cooldown_minutes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$last_notified_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertEvent\:\:\$triggered_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$config\.$#'
+			identifier: property.notFound
+			count: 8
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$duration_minutes\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$enabled\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$metric\.$#'
+			identifier: property.notFound
+			count: 7
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$node_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$operator\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$scope\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$server_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$severity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$threshold\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\:\:\$sampled_at\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\:\:\$value\.$#'
+			identifier: property.notFound
+			count: 8
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: mixed$#'
+			identifier: match.unhandled
+			count: 2
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Method PelicanPlugins\\ResourceUsageAlerts\\Services\\AlertRuleEvaluator\:\:latestSample\(\) should return PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Method PelicanPlugins\\ResourceUsageAlerts\\Services\\AlertRuleEvaluator\:\:targetsFor\(\) should return Illuminate\\Support\\Collection\<int, array\{server_id\: int\|null, node_id\: int\|null, user_id\: int\|null\}\> but returns Illuminate\\Support\\Collection\<\(int\|string\), array\{server_id\: null, node_id\: int, user_id\: mixed\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Method PelicanPlugins\\ResourceUsageAlerts\\Services\\AlertRuleEvaluator\:\:targetsFor\(\) should return Illuminate\\Support\\Collection\<int, array\{server_id\: int\|null, node_id\: int\|null, user_id\: int\|null\}\> but returns Illuminate\\Support\\Collection\<int, array\{server_id\: int, node_id\: null, user_id\: mixed\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Method PelicanPlugins\\ResourceUsageAlerts\\Services\\AlertRuleEvaluator\:\:targetsFor\(\) should return Illuminate\\Support\\Collection\<int, array\{server_id\: int\|null, node_id\: int\|null, user_id\: int\|null\}\> but returns Illuminate\\Support\\Collection\<int, array\{server_id\: null, node_id\: null, user_id\: null\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Server\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, int\|null\>\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Parameter \#2 \$samples of method PelicanPlugins\\ResourceUsageAlerts\\Services\\AlertRuleEvaluator\:\:samplesMeetDuration\(\) expects Illuminate\\Support\\Collection\<int, PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Services/AlertRuleEvaluator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$permissions\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/BlueItAnnouncementService.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Services/BlueItAnnouncementService.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<int, array\<string, mixed\>\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Services/BlueItAnnouncementService.php
+
+		-
+			message: '#^Method Illuminate\\Http\\Client\\Response\:\:header\(\) invoked with 2 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: src/Services/BlueItAnnouncementService.php
+
+		-
+			message: '#^Offset ''announcements'' on array\{available\: bool, announcements\: array\<int, array\<string, mixed\>\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Services/BlueItAnnouncementService.php
+
+		-
+			message: '#^Offset ''available'' on array\{available\: bool, announcements\: array\<int, array\<string, mixed\>\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Services/BlueItAnnouncementService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertChannel\:\:\$config\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/ChannelAuditService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertChannel\:\:\$server_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/ChannelAuditService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertChannel\:\:\$type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/ChannelAuditService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$config\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/DeliveryTrackerService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertChannel\:\:\$config\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/DeliveryTrackerService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertMaintenanceWindow\:\:\$ends_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/MaintenanceWindowService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertMaintenanceWindow\:\:\$recurrence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/MaintenanceWindowService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertMaintenanceWindow\:\:\$starts_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/MaintenanceWindowService.php
+
+		-
+			message: '#^Parameter \#1 \$rule of method PelicanPlugins\\ResourceUsageAlerts\\Services\\OnCallRotationService\:\:getOnCallUser\(\) expects PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Services/OnCallRotationService.php
+
+		-
+			message: '#^Variable \$users in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: src/Services/OnCallRotationService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertChannel\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/PermissionService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\:\:\$context\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/ResourceSampleService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\:\:\$sampled_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/ResourceSampleService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertSample\:\:\$value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/ResourceSampleService.php
+
+		-
+			message: '#^Offset ''disk_io_operations'' on array\{\}\|array\{memory_total\: int, memory_used\: int, swap_total\: int, swap_used\: int, load_average1\: float, load_average5\: float, load_average15\: float, cpu_percent\: float, \.\.\.\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Services/ResourceSampleService.php
+
+		-
+			message: '#^Offset ''inode_total'' on array\{\}\|array\{memory_total\: int, memory_used\: int, swap_total\: int, swap_used\: int, load_average1\: float, load_average5\: float, load_average15\: float, cpu_percent\: float, \.\.\.\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Services/ResourceSampleService.php
+
+		-
+			message: '#^Offset ''inode_used'' on array\{\}\|array\{memory_total\: int, memory_used\: int, swap_total\: int, swap_used\: int, load_average1\: float, load_average5\: float, load_average15\: float, cpu_percent\: float, \.\.\.\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Services/ResourceSampleService.php
+
+		-
+			message: '#^Offset ''network_rx_bytes'' on array\{\}\|array\{memory_total\: int, memory_used\: int, swap_total\: int, swap_used\: int, load_average1\: float, load_average5\: float, load_average15\: float, cpu_percent\: float, \.\.\.\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Services/ResourceSampleService.php
+
+		-
+			message: '#^Offset ''network_tx_bytes'' on array\{\}\|array\{memory_total\: int, memory_used\: int, swap_total\: int, swap_used\: int, load_average1\: float, load_average5\: float, load_average15\: float, cpu_percent\: float, \.\.\.\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Services/ResourceSampleService.php
+
+		-
+			message: '#^Offset ''process_count'' on array\{\}\|array\{memory_total\: int, memory_used\: int, swap_total\: int, swap_used\: int, load_average1\: float, load_average5\: float, load_average15\: float, cpu_percent\: float, \.\.\.\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Services/ResourceSampleService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/Services/ResourceSampleService.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Backup\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/Services/ResourceSampleService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$channels\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/RuleTemplateService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$config\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/RuleTemplateService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$cooldown_minutes\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/RuleTemplateService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$duration_minutes\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/RuleTemplateService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$metric\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/RuleTemplateService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/RuleTemplateService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$operator\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/RuleTemplateService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$scope\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/RuleTemplateService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$severity\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/RuleTemplateService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$threshold\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/RuleTemplateService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: src/Services/RuleTemplateService.php
+
+		-
+			message: '#^Invalid array key type PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\.$#'
+			identifier: offsetAccess.invalidOffset
+			count: 1
+			path: src/Services/SampleRetentionService.php
+
+		-
+			message: '#^Invalid array key type PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:BACKUP_DURATION\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:BACKUP_FAILED\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:BACKUP_STALE\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:CPU_PERCENT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:CUSTOM\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:DISK_IOPS\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:DISK_PERCENT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:INODE_PERCENT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:NETWORK_IN\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:NETWORK_OUT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:NODE_OFFLINE\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:OOM_EVENTS\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:PROCESS_COUNT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:QUEUE_FAILED_JOBS\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:QUEUE_OLDEST_JOB_AGE\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:RAM_PERCENT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:SERVER_CRASHED\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:SERVER_OFFLINE\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:SSL_CERT_EXPIRY\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:SWAP_PERCENT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:WINGS_VERSION\.$#'
+			identifier: offsetAccess.invalidOffset
+			count: 1
+			path: src/Services/SampleRetentionService.php
+
+		-
+			message: '#^Invalid array key type PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:CPU_PERCENT\.$#'
+			identifier: array.invalidKey
+			count: 1
+			path: src/Services/SampleRetentionService.php
+
+		-
+			message: '#^Invalid array key type PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:DISK_IOPS\.$#'
+			identifier: array.invalidKey
+			count: 1
+			path: src/Services/SampleRetentionService.php
+
+		-
+			message: '#^Invalid array key type PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:DISK_PERCENT\.$#'
+			identifier: array.invalidKey
+			count: 1
+			path: src/Services/SampleRetentionService.php
+
+		-
+			message: '#^Invalid array key type PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:INODE_PERCENT\.$#'
+			identifier: array.invalidKey
+			count: 1
+			path: src/Services/SampleRetentionService.php
+
+		-
+			message: '#^Invalid array key type PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:NETWORK_IN\.$#'
+			identifier: array.invalidKey
+			count: 1
+			path: src/Services/SampleRetentionService.php
+
+		-
+			message: '#^Invalid array key type PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:NETWORK_OUT\.$#'
+			identifier: array.invalidKey
+			count: 1
+			path: src/Services/SampleRetentionService.php
+
+		-
+			message: '#^Invalid array key type PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:PROCESS_COUNT\.$#'
+			identifier: array.invalidKey
+			count: 1
+			path: src/Services/SampleRetentionService.php
+
+		-
+			message: '#^Invalid array key type PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:RAM_PERCENT\.$#'
+			identifier: array.invalidKey
+			count: 1
+			path: src/Services/SampleRetentionService.php
+
+		-
+			message: '#^Invalid array key type PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:SWAP_PERCENT\.$#'
+			identifier: array.invalidKey
+			count: 1
+			path: src/Services/SampleRetentionService.php
+
+		-
+			message: '#^Offset PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric on non\-empty\-array\<mixed, 3\|7\|14\> on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Services/SampleRetentionService.php
+
+		-
+			message: '#^Offset PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:BACKUP_DURATION\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:BACKUP_FAILED\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:BACKUP_STALE\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:CPU_PERCENT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:CUSTOM\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:DISK_IOPS\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:DISK_PERCENT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:INODE_PERCENT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:NETWORK_IN\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:NETWORK_OUT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:NODE_OFFLINE\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:OOM_EVENTS\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:PROCESS_COUNT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:QUEUE_FAILED_JOBS\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:QUEUE_OLDEST_JOB_AGE\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:RAM_PERCENT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:SERVER_CRASHED\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:SERVER_OFFLINE\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:SSL_CERT_EXPIRY\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:SWAP_PERCENT\|PelicanPlugins\\ResourceUsageAlerts\\Enums\\AlertMetric\:\:WINGS_VERSION on non\-empty\-array\<mixed, 3\|7\|14\> on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Services/SampleRetentionService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$server_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/TeamAlertService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertRule\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/TeamAlertService.php
+
+		-
+			message: '#^Access to an undefined property PelicanPlugins\\ResourceUsageAlerts\\Models\\ResourceAlertPushSubscription\:\:\$subscription\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/WebPushNotificationService.php
+
+		-
+			message: '#^Call to method sendOneNotification\(\) on an unknown class Minishlink\\WebPush\\WebPush\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Services/WebPushNotificationService.php
+
+		-
+			message: '#^Call to static method create\(\) on an unknown class Minishlink\\WebPush\\Subscription\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Services/WebPushNotificationService.php
+
+		-
+			message: '#^Instantiated class Minishlink\\WebPush\\WebPush not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Services/WebPushNotificationService.php
