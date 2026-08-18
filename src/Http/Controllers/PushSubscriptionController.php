@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Schema;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertPushSubscription;
+use PelicanPlugins\ResourceUsageAlerts\Services\OutboundEndpointGuard;
 use PelicanPlugins\ResourceUsageAlerts\Services\WebPushNotificationService;
 
 class PushSubscriptionController extends Controller
@@ -25,7 +26,7 @@ class PushSubscriptionController extends Controller
         ]);
     }
 
-    public function store(Request $request, WebPushNotificationService $push): JsonResponse
+    public function store(Request $request, WebPushNotificationService $push, OutboundEndpointGuard $guard): JsonResponse
     {
         abort_unless($push->isConfigured() && $this->subscriptionsAvailable(), 503);
 
@@ -38,8 +39,17 @@ class PushSubscriptionController extends Controller
             'contentEncoding' => ['nullable', 'string', 'in:aes128gcm,aesgcm'],
         ]);
 
+        $guard->assertAllowed($data['endpoint']);
+
+        $endpointHash = hash('sha256', $data['endpoint']);
+        $ownedByAnotherUser = ResourceAlertPushSubscription::query()
+            ->where('endpoint_hash', $endpointHash)
+            ->where('user_id', '!=', $request->user()->id)
+            ->exists();
+        abort_if($ownedByAnotherUser, 409, 'This push endpoint is already registered to another user.');
+
         ResourceAlertPushSubscription::query()->updateOrCreate(
-            ['endpoint_hash' => hash('sha256', $data['endpoint'])],
+            ['user_id' => $request->user()->id, 'endpoint_hash' => $endpointHash],
             [
                 'user_id' => $request->user()->id,
                 'subscription' => $data,
@@ -48,12 +58,23 @@ class PushSubscriptionController extends Controller
             ]
         );
 
+        $maximum = max(1, (int) config('resourceusagealerts.max_push_subscriptions_per_user', 10));
+        $obsoleteIds = ResourceAlertPushSubscription::query()
+            ->where('user_id', $request->user()->id)
+            ->latest('updated_at')
+            ->skip($maximum)
+            ->take(1000)
+            ->pluck('id');
+        if ($obsoleteIds->isNotEmpty()) {
+            ResourceAlertPushSubscription::query()->whereKey($obsoleteIds)->delete();
+        }
+
         return response()->json(['subscribed' => true]);
     }
 
     public function destroy(Request $request): JsonResponse
     {
-        if (!$this->subscriptionsAvailable()) {
+        if (! $this->subscriptionsAvailable()) {
             return response()->json(['subscribed' => false]);
         }
 
@@ -71,7 +92,7 @@ class PushSubscriptionController extends Controller
 
     public function test(Request $request, WebPushNotificationService $push): JsonResponse
     {
-        if (!$push->isConfigured()) {
+        if (! $push->isConfigured()) {
             return response()->json([
                 'sent' => false,
                 'reason' => 'not_configured',
@@ -79,7 +100,7 @@ class PushSubscriptionController extends Controller
             ], 503);
         }
 
-        if (!$this->subscriptionsAvailable()) {
+        if (! $this->subscriptionsAvailable()) {
             return response()->json([
                 'sent' => false,
                 'reason' => 'migration_missing',
@@ -111,7 +132,7 @@ class PushSubscriptionController extends Controller
         }
 
         $sent = collect($results)->contains(fn (array $result): bool => $result['sent']);
-        $failure = collect($results)->first(fn (array $result): bool => !$result['sent']);
+        $failure = collect($results)->first(fn (array $result): bool => ! $result['sent']);
 
         return response()->json([
             'sent' => $sent,

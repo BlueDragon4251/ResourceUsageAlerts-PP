@@ -34,8 +34,8 @@ class ServerAlertHistoryTable extends TableWidget
             ])
             ->filters([
                 SelectFilter::make('status')->options([
-                    AlertStatus::OPEN->value => 'Open',
-                    AlertStatus::RESOLVED->value => 'Resolved',
+                    AlertStatus::OPEN->value => trans('resourceusagealerts::strings.events.status_open'),
+                    AlertStatus::RESOLVED->value => trans('resourceusagealerts::strings.events.status_resolved'),
                 ]),
             ])
             ->defaultPaginationPageOption(10);

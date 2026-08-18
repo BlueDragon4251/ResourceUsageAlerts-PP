@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PelicanPlugins\ResourceUsageAlerts\Services;
 
 use App\Models\Server;
+use PelicanPlugins\ResourceUsageAlerts\Enums\AlertChannelType;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertMetric;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertOperator;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertScope;
@@ -120,12 +121,12 @@ class RuleTemplateService
     public function createFromTemplate(string $templateKey, Server $server, ?int $userId = null): ?ResourceAlertRule
     {
         $template = self::TEMPLATES[$templateKey] ?? null;
-        if (!$template) {
+        if (! $template) {
             return null;
         }
 
         return ResourceAlertRule::query()->create([
-            'name' => $template['name'] . ' - ' . $server->name,
+            'name' => $template['name'].' - '.$server->name,
             'metric' => $template['metric'],
             'operator' => $template['operator'],
             'severity' => $template['severity'],
@@ -144,7 +145,7 @@ class RuleTemplateService
         $count = 0;
         foreach ($serverIds as $serverId) {
             $server = Server::find($serverId);
-            if (!$server) {
+            if (! $server) {
                 continue;
             }
             if ($this->createFromTemplate($templateKey, $server, $userId)) {
@@ -158,7 +159,7 @@ class RuleTemplateService
     public function duplicateRule(ResourceAlertRule $rule, Server $targetServer): ResourceAlertRule
     {
         return ResourceAlertRule::query()->create([
-            'name' => $rule->name . ' (Copy)',
+            'name' => $rule->name.' (Copy)',
             'metric' => $rule->metric,
             'operator' => $rule->operator,
             'severity' => $rule->severity,
@@ -171,5 +172,55 @@ class RuleTemplateService
             'enabled' => false,
             'user_id' => $targetServer->owner_id,
         ]);
+    }
+
+    public function exportRules(): string
+    {
+        $rules = ResourceAlertRule::query()->get()->map(fn (ResourceAlertRule $rule): array => [
+            'name' => $rule->name,
+            'scope' => $rule->scope->value,
+            'metric' => $rule->metric->value,
+            'operator' => $rule->operator->value,
+            'threshold' => $rule->threshold,
+            'duration_minutes' => $rule->duration_minutes,
+            'cooldown_minutes' => $rule->cooldown_minutes,
+            'severity' => $rule->severity->value,
+            'channels' => $rule->channels,
+            'config' => $rule->config,
+            'enabled' => false,
+        ])->all();
+
+        return json_encode(['format' => 'resource-alert-rules-v1', 'rules' => $rules], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR);
+    }
+
+    public function importRules(string $json): int
+    {
+        $payload = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
+        if (($payload['format'] ?? null) !== 'resource-alert-rules-v1' || ! is_array($payload['rules'] ?? null)) {
+            throw new \InvalidArgumentException('Unsupported rule template format.');
+        }
+
+        $count = 0;
+        foreach ($payload['rules'] as $data) {
+            if (! is_array($data) || ! AlertMetric::tryFrom((string) ($data['metric'] ?? '')) || ! AlertOperator::tryFrom((string) ($data['operator'] ?? ''))) {
+                continue;
+            }
+            ResourceAlertRule::query()->create([
+                'name' => substr((string) ($data['name'] ?? 'Imported rule'), 0, 255),
+                'scope' => AlertScope::GLOBAL,
+                'metric' => $data['metric'],
+                'operator' => $data['operator'],
+                'threshold' => $data['threshold'] ?? null,
+                'duration_minutes' => max(0, (int) ($data['duration_minutes'] ?? 5)),
+                'cooldown_minutes' => max(0, (int) ($data['cooldown_minutes'] ?? 30)),
+                'severity' => AlertSeverity::tryFrom((string) ($data['severity'] ?? 'warning')) ?? AlertSeverity::WARNING,
+                'channels' => array_values(array_intersect((array) ($data['channels'] ?? []), array_column(AlertChannelType::cases(), 'value'))),
+                'config' => is_array($data['config'] ?? null) ? $data['config'] : [],
+                'enabled' => false,
+            ]);
+            $count++;
+        }
+
+        return $count;
     }
 }

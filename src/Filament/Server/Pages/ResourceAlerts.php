@@ -9,11 +9,12 @@ use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Pages\Page;
-use Illuminate\Support\Facades\Schema;
 use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Support\Facades\Schema;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertChannelType;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertMetric;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertOperator;
@@ -99,6 +100,10 @@ class ResourceAlerts extends Page
                             AlertChannelType::EMAIL->value => 'Email',
                             AlertChannelType::TELEGRAM->value => 'Telegram',
                             AlertChannelType::SLACK->value => 'Slack',
+                            AlertChannelType::CUSTOM_WEBHOOK->value => trans('resourceusagealerts::strings.channels.custom_webhook'),
+                            AlertChannelType::NTFY->value => 'ntfy',
+                            AlertChannelType::GOTIFY->value => 'Gotify',
+                            AlertChannelType::MATRIX->value => 'Matrix',
                         ])
                         ->required()
                         ->live(),
@@ -106,27 +111,67 @@ class ResourceAlerts extends Page
                         ->url()
                         ->password()
                         ->revealable()
-                        ->required(fn (Get $get) => in_array($get('type'), [AlertChannelType::DISCORD->value, AlertChannelType::SLACK->value], true))
-                        ->visible(fn (Get $get) => in_array($get('type'), [AlertChannelType::DISCORD->value, AlertChannelType::SLACK->value], true)),
+                        ->required(fn (Get $get) => in_array($get('type'), [AlertChannelType::DISCORD->value, AlertChannelType::SLACK->value, AlertChannelType::CUSTOM_WEBHOOK->value], true))
+                        ->visible(fn (Get $get) => in_array($get('type'), [AlertChannelType::DISCORD->value, AlertChannelType::SLACK->value, AlertChannelType::CUSTOM_WEBHOOK->value], true)),
+                    TextInput::make('signing_secret')
+                        ->label(trans('resourceusagealerts::strings.channels.signing_secret'))
+                        ->password()
+                        ->revealable()
+                        ->minLength(32)
+                        ->required(fn (Get $get) => $get('type') === AlertChannelType::CUSTOM_WEBHOOK->value)
+                        ->visible(fn (Get $get) => $get('type') === AlertChannelType::CUSTOM_WEBHOOK->value),
+                    TextInput::make('previous_signing_secret')
+                        ->label(trans('resourceusagealerts::strings.channels.previous_signing_secret'))
+                        ->password()
+                        ->revealable()
+                        ->minLength(32)
+                        ->visible(fn (Get $get) => $get('type') === AlertChannelType::CUSTOM_WEBHOOK->value),
+                    Textarea::make('payload_template')
+                        ->label(trans('resourceusagealerts::strings.channels.payload_template'))
+                        ->helperText(trans('resourceusagealerts::strings.channels.payload_template_help'))
+                        ->rows(6)
+                        ->visible(fn (Get $get) => $get('type') === AlertChannelType::CUSTOM_WEBHOOK->value),
                     TextInput::make('bot_token')
-                        ->label('Telegram bot token')
+                        ->label(trans('resourceusagealerts::strings.channels.telegram_bot_token'))
                         ->password()
                         ->revealable()
                         ->required(fn (Get $get) => $get('type') === AlertChannelType::TELEGRAM->value)
                         ->visible(fn (Get $get) => $get('type') === AlertChannelType::TELEGRAM->value),
                     TextInput::make('chat_id')
-                        ->label('Telegram chat ID')
+                        ->label(trans('resourceusagealerts::strings.channels.telegram_chat_id'))
                         ->required(fn (Get $get) => $get('type') === AlertChannelType::TELEGRAM->value)
                         ->visible(fn (Get $get) => $get('type') === AlertChannelType::TELEGRAM->value),
                     TextInput::make('email')
                         ->email()
                         ->required(fn (Get $get) => $get('type') === AlertChannelType::EMAIL->value)
                         ->visible(fn (Get $get) => $get('type') === AlertChannelType::EMAIL->value),
+                    TextInput::make('endpoint_url')
+                        ->label(trans('resourceusagealerts::strings.channels.endpoint_url'))
+                        ->url()
+                        ->required(fn (Get $get) => in_array($get('type'), [AlertChannelType::NTFY->value, AlertChannelType::GOTIFY->value, AlertChannelType::MATRIX->value], true))
+                        ->visible(fn (Get $get) => in_array($get('type'), [AlertChannelType::NTFY->value, AlertChannelType::GOTIFY->value, AlertChannelType::MATRIX->value], true)),
+                    TextInput::make('api_token')
+                        ->label(trans('resourceusagealerts::strings.channels.api_token'))
+                        ->password()->revealable()
+                        ->required(fn (Get $get) => in_array($get('type'), [AlertChannelType::GOTIFY->value, AlertChannelType::MATRIX->value], true))
+                        ->visible(fn (Get $get) => in_array($get('type'), [AlertChannelType::NTFY->value, AlertChannelType::GOTIFY->value, AlertChannelType::MATRIX->value], true)),
+                    TextInput::make('topic')
+                        ->label(trans('resourceusagealerts::strings.channels.ntfy_topic'))
+                        ->default('pelican-alerts')
+                        ->visible(fn (Get $get) => $get('type') === AlertChannelType::NTFY->value),
+                    TextInput::make('room_id')
+                        ->label(trans('resourceusagealerts::strings.channels.matrix_room'))
+                        ->required(fn (Get $get) => $get('type') === AlertChannelType::MATRIX->value)
+                        ->visible(fn (Get $get) => $get('type') === AlertChannelType::MATRIX->value),
+                    TextInput::make('cooldown_minutes')
+                        ->label(trans('resourceusagealerts::strings.channels.cooldown_minutes'))
+                        ->numeric()->minValue(0)->default(0),
                     Toggle::make('enabled')->default(true),
                 ])
                 ->action(function (array $data): void {
                     ResourceAlertChannel::query()->create([
                         'user_id' => user()?->id,
+                        'server_id' => $server->id,
                         'name' => $data['name'],
                         'type' => $data['type'],
                         'config' => [
@@ -134,6 +179,14 @@ class ResourceAlerts extends Page
                             'email' => $data['email'] ?? null,
                             'bot_token' => $data['bot_token'] ?? null,
                             'chat_id' => $data['chat_id'] ?? null,
+                            'signing_secret' => $data['signing_secret'] ?? null,
+                            'previous_signing_secret' => $data['previous_signing_secret'] ?? null,
+                            'payload_template' => $data['payload_template'] ?? null,
+                            'cooldown_minutes' => max(0, (int) ($data['cooldown_minutes'] ?? 0)),
+                            'endpoint_url' => $data['endpoint_url'] ?? null,
+                            'api_token' => $data['api_token'] ?? null,
+                            'topic' => $data['topic'] ?? null,
+                            'room_id' => $data['room_id'] ?? null,
                         ],
                         'enabled' => $data['enabled'] ?? true,
                     ]);
@@ -172,14 +225,14 @@ class ResourceAlerts extends Page
                 ->options(collect(AlertOperator::cases())->mapWithKeys(fn (AlertOperator $operator) => [$operator->value => $operator->value])->all())
                 ->default(AlertOperator::GTE->value)
                 ->required()
-                ->visible(fn (Get $get) => !AlertMetric::tryFrom((string) $get('metric'))?->isBoolean()),
+                ->visible(fn (Get $get) => ! AlertMetric::tryFrom((string) $get('metric'))?->isBoolean()),
             TextInput::make('threshold')
                 ->numeric()
                 ->minValue(0)
                 ->maxValue(100)
                 ->suffix('%')
-                ->required(fn (Get $get) => !AlertMetric::tryFrom((string) $get('metric'))?->isBoolean())
-                ->visible(fn (Get $get) => !AlertMetric::tryFrom((string) $get('metric'))?->isBoolean()),
+                ->required(fn (Get $get) => ! AlertMetric::tryFrom((string) $get('metric'))?->isBoolean())
+                ->visible(fn (Get $get) => ! AlertMetric::tryFrom((string) $get('metric'))?->isBoolean()),
             TextInput::make('duration_minutes')->numeric()->minValue(0)->required()->default(5),
             TextInput::make('cooldown_minutes')->numeric()->minValue(0)->required()->default(30),
             Select::make('severity')
@@ -193,7 +246,11 @@ class ResourceAlerts extends Page
                     AlertChannelType::EMAIL->value => 'Email',
                     AlertChannelType::TELEGRAM->value => 'Telegram',
                     AlertChannelType::SLACK->value => 'Slack',
-                    AlertChannelType::PUSH->value => 'Browser Push',
+                    AlertChannelType::CUSTOM_WEBHOOK->value => trans('resourceusagealerts::strings.channels.custom_webhook'),
+                    AlertChannelType::PUSH->value => trans('resourceusagealerts::strings.channels.browser_push'),
+                    AlertChannelType::NTFY->value => 'ntfy',
+                    AlertChannelType::GOTIFY->value => 'Gotify',
+                    AlertChannelType::MATRIX->value => 'Matrix',
                 ])
                 ->default([AlertChannelType::PANEL->value, AlertChannelType::PUSH->value]),
             Toggle::make('enabled')->default(true),

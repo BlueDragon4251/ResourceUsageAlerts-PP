@@ -12,6 +12,7 @@ use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertRule;
 use PelicanPlugins\ResourceUsageAlerts\Services\AlertRuleEvaluator;
 use PelicanPlugins\ResourceUsageAlerts\Services\ResourceSampleService;
+use PelicanPlugins\ResourceUsageAlerts\Services\RuntimeHealthService;
 use Throwable;
 
 class CheckResourceAlertsCommand extends Command
@@ -20,8 +21,9 @@ class CheckResourceAlertsCommand extends Command
 
     protected $description = 'Collect resource samples and evaluate Resource Usage Alert rules.';
 
-    public function handle(ResourceSampleService $samples, AlertRuleEvaluator $evaluator): int
+    public function handle(ResourceSampleService $samples, AlertRuleEvaluator $evaluator, RuntimeHealthService $health): int
     {
+        $collectionStartedAt = microtime(true);
         $servers = 0;
         $nodes = 0;
         $errors = 0;
@@ -44,13 +46,20 @@ class CheckResourceAlertsCommand extends Command
                 $errors++;
             }
         });
-        ResourceAlertRule::query()->enabled()->each(function (ResourceAlertRule $rule) use ($evaluator, &$errors): void {
+        $collectionErrors = $errors;
+        $health->mark('collection', $servers + $nodes, $collectionErrors, (int) ((microtime(true) - $collectionStartedAt) * 1000));
+
+        $evaluationStartedAt = microtime(true);
+        $evaluatedRules = 0;
+        ResourceAlertRule::query()->enabled()->each(function (ResourceAlertRule $rule) use ($evaluator, &$errors, &$evaluatedRules): void {
             try {
                 $evaluator->evaluateRuleTargets($rule);
+                $evaluatedRules++;
             } catch (Throwable) {
                 $errors++;
             }
         });
+        $health->mark('evaluation', $evaluatedRules, $errors - $collectionErrors, (int) ((microtime(true) - $evaluationStartedAt) * 1000));
 
         $this->table(['Checked servers', 'Checked nodes', 'Triggered alerts', 'Resolved alerts', 'Errors'], [[
             $servers,

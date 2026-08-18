@@ -9,33 +9,49 @@ use App\Filament\Pages\Auth\EditProfile;
 use App\Models\Role;
 use App\Models\Subuser;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\View;
-use Filament\Facades\Filament;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
-use Livewire\Livewire;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
+use PelicanPlugins\ResourceUsageAlerts\Commands\CleanResolvedAlerts;
+use PelicanPlugins\ResourceUsageAlerts\Console\Commands\CheckAlertTranslationsCommand;
+use PelicanPlugins\ResourceUsageAlerts\Console\Commands\CheckResourceAlertsCommand;
+use PelicanPlugins\ResourceUsageAlerts\Console\Commands\CleanupResourceAlertsCommand;
+use PelicanPlugins\ResourceUsageAlerts\Console\Commands\DoctorResourceAlertsCommand;
+use PelicanPlugins\ResourceUsageAlerts\Console\Commands\GeneratePushKeysCommand;
+use PelicanPlugins\ResourceUsageAlerts\Console\Commands\SendAlertReportsCommand;
+use PelicanPlugins\ResourceUsageAlerts\Console\Commands\TransferAlertRulesCommand;
 use PelicanPlugins\ResourceUsageAlerts\Jobs\CleanupOldAlertSamplesJob;
+use PelicanPlugins\ResourceUsageAlerts\Jobs\CollectResourceSamplesJob;
 use PelicanPlugins\ResourceUsageAlerts\Livewire\BlueItAnnouncements;
 use PelicanPlugins\ResourceUsageAlerts\Livewire\OpenAlertBanners;
-use PelicanPlugins\ResourceUsageAlerts\Jobs\CollectResourceSamplesJob;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertChannel;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertRule;
 use PelicanPlugins\ResourceUsageAlerts\Policies\ResourceAlertChannelPolicy;
 use PelicanPlugins\ResourceUsageAlerts\Policies\ResourceAlertEventPolicy;
 use PelicanPlugins\ResourceUsageAlerts\Policies\ResourceAlertRulePolicy;
+use PelicanPlugins\ResourceUsageAlerts\Services\AlertEscalationService;
 use PelicanPlugins\ResourceUsageAlerts\Services\AlertMessageFormatter;
 use PelicanPlugins\ResourceUsageAlerts\Services\AlertNotificationService;
+use PelicanPlugins\ResourceUsageAlerts\Services\AlertReportService;
 use PelicanPlugins\ResourceUsageAlerts\Services\AlertRuleEvaluator;
 use PelicanPlugins\ResourceUsageAlerts\Services\BlueItAnnouncementService;
+use PelicanPlugins\ResourceUsageAlerts\Services\ChannelAuditService;
+use PelicanPlugins\ResourceUsageAlerts\Services\DeliveryTrackerService;
+use PelicanPlugins\ResourceUsageAlerts\Services\MaintenanceWindowService;
+use PelicanPlugins\ResourceUsageAlerts\Services\OutboundEndpointGuard;
 use PelicanPlugins\ResourceUsageAlerts\Services\PermissionService;
 use PelicanPlugins\ResourceUsageAlerts\Services\ResourceSampleService;
+use PelicanPlugins\ResourceUsageAlerts\Services\RuntimeHealthService;
+use PelicanPlugins\ResourceUsageAlerts\Services\TargetBackoffService;
 use PelicanPlugins\ResourceUsageAlerts\Services\WebPushNotificationService;
 
 class ResourceUsageAlertsPluginProvider extends ServiceProvider
@@ -47,8 +63,14 @@ class ResourceUsageAlertsPluginProvider extends ServiceProvider
         $this->app->singleton(AlertMessageFormatter::class);
         $this->app->singleton(AlertNotificationService::class);
         $this->app->singleton(PermissionService::class);
+        $this->app->singleton(OutboundEndpointGuard::class);
+        $this->app->singleton(RuntimeHealthService::class);
+        $this->app->singleton(MaintenanceWindowService::class);
+        $this->app->singleton(DeliveryTrackerService::class);
+        $this->app->singleton(TargetBackoffService::class);
         $this->app->singleton(WebPushNotificationService::class);
         $this->app->singleton(BlueItAnnouncementService::class);
+        $this->app->singleton(ChannelAuditService::class);
 
         Role::registerCustomDefaultPermissions('resourceAlertRule');
         Role::registerCustomPermissions([
@@ -68,6 +90,19 @@ class ResourceUsageAlertsPluginProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                CheckResourceAlertsCommand::class,
+                CleanResolvedAlerts::class,
+                CleanupResourceAlertsCommand::class,
+                DoctorResourceAlertsCommand::class,
+                GeneratePushKeysCommand::class,
+                SendAlertReportsCommand::class,
+                CheckAlertTranslationsCommand::class,
+                TransferAlertRulesCommand::class,
+            ]);
+        }
+
         $this->loadTranslationsFrom(plugin_path('resourceusagealerts', 'lang'), 'resourceusagealerts');
         $this->loadViewsFrom(plugin_path('resourceusagealerts', 'resources/views'), 'resourceusagealerts');
         $this->loadPluginTranslationsForCurrentLocale();
@@ -115,19 +150,27 @@ class ResourceUsageAlertsPluginProvider extends ServiceProvider
                 FILTER_NULL_ON_FAILURE
             ) ?? true;
 
-            if (!$enabled) {
+            if (! $enabled) {
                 return;
             }
 
             $interval = max(1, (int) config('resourceusagealerts.poll_interval_minutes', 5));
 
-            $schedule->job(new CollectResourceSamplesJob())
+            $schedule->job(new CollectResourceSamplesJob)
                 ->cron("*/{$interval} * * * *")
                 ->name('resource-usage-alerts:collect')
                 ->withoutOverlapping();
-            $schedule->job(new CleanupOldAlertSamplesJob())
+            $schedule->job(new CleanupOldAlertSamplesJob)
                 ->daily()
                 ->name('resource-usage-alerts:cleanup')
+                ->withoutOverlapping();
+            $schedule->call(fn () => app(AlertEscalationService::class)->processEscalations())
+                ->everyMinute()
+                ->name('resource-usage-alerts:escalate')
+                ->withoutOverlapping();
+            $schedule->call(fn () => app(AlertReportService::class)->sendDueReports())
+                ->weeklyOn(1, '08:00')
+                ->name('resource-usage-alerts:reports')
                 ->withoutOverlapping();
         });
     }
@@ -136,9 +179,9 @@ class ResourceUsageAlertsPluginProvider extends ServiceProvider
     {
         $locale = (string) app()->getLocale();
         $targetLocale = str_starts_with(strtolower($locale), 'de') ? 'de' : 'en';
-        $basePath = plugin_path('resourceusagealerts', 'lang/' . $targetLocale);
+        $basePath = plugin_path('resourceusagealerts', 'lang/'.$targetLocale);
 
-        foreach (glob($basePath . '/*.php') ?: [] as $file) {
+        foreach (glob($basePath.'/*.php') ?: [] as $file) {
             $group = basename($file, '.php');
             $lines = require $file;
             if (is_array($lines)) {
@@ -153,9 +196,10 @@ class ResourceUsageAlertsPluginProvider extends ServiceProvider
         $flattened = [];
 
         foreach ($lines as $key => $value) {
-            $fullKey = $prefix . '.' . $key;
+            $fullKey = $prefix.'.'.$key;
             if (is_array($value)) {
                 $flattened += $this->flattenTranslations($value, $fullKey);
+
                 continue;
             }
 
@@ -164,5 +208,4 @@ class ResourceUsageAlertsPluginProvider extends ServiceProvider
 
         return $flattened;
     }
-
 }

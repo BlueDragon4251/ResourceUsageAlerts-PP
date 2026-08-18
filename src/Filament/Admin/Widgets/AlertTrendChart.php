@@ -33,7 +33,7 @@ class AlertTrendChart extends Widget
         $this->criticalData = [];
         $this->warningData = [];
 
-        for ($i = 13; $i >= 0; --$i) {
+        for ($i = 13; $i >= 0; $i--) {
             $day = Carbon::today()->subDays($i);
             $nextDay = $day->copy()->addDay();
 

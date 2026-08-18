@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace PelicanPlugins\ResourceUsageAlerts\Services;
 
-use PelicanPlugins\ResourceUsageAlerts\Enums\AlertStatus;
+use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertChannel;
+use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertDeliveryAttempt;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
+use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertRule;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertSample;
 
 class AlertExportService
@@ -18,13 +20,13 @@ class AlertExportService
         $query = ResourceAlertEvent::query()
             ->with(['rule', 'server', 'node']);
 
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
-        if (!empty($filters['from'])) {
+        if (! empty($filters['from'])) {
             $query->where('triggered_at', '>=', $filters['from']);
         }
-        if (!empty($filters['to'])) {
+        if (! empty($filters['to'])) {
             $query->where('triggered_at', '<=', $filters['to']);
         }
 
@@ -113,5 +115,56 @@ class AlertExportService
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Expires' => '0',
         ];
+    }
+
+    public function exportJson(string $resource, array $filters = []): string
+    {
+        $query = match ($resource) {
+            'events' => ResourceAlertEvent::query()->with(['rule:id,name', 'server:id,name', 'node:id,name']),
+            'samples' => ResourceAlertSample::query(),
+            'rules' => ResourceAlertRule::query()->withTrashed(),
+            'channels' => ResourceAlertChannel::query()->select(['id', 'user_id', 'server_id', 'name', 'type', 'enabled', 'created_at', 'updated_at']),
+            'deliveries' => ResourceAlertDeliveryAttempt::query(),
+            default => throw new \InvalidArgumentException('Unsupported export resource.'),
+        };
+        foreach (['status', 'severity', 'metric', 'server_id', 'node_id'] as $key) {
+            if (filled($filters[$key] ?? null)) {
+                $query->where($key, $filters[$key]);
+            }
+        }
+        if (filled($filters['from'] ?? null)) {
+            $query->where($resource === 'samples' ? 'sampled_at' : 'created_at', '>=', $filters['from']);
+        }
+        if (filled($filters['to'] ?? null)) {
+            $query->where($resource === 'samples' ? 'sampled_at' : 'created_at', '<=', $filters['to']);
+        }
+
+        return $query->limit(10000)->get()->toJson(JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    }
+
+    public function exportResourceCsv(string $resource, array $filters = []): string
+    {
+        $rows = json_decode($this->exportJson($resource, $filters), true, flags: JSON_THROW_ON_ERROR);
+        if (! is_array($rows) || $rows === []) {
+            return "\xEF\xBB\xBF";
+        }
+
+        $normalized = collect($rows)->filter(fn (mixed $row): bool => is_array($row))->map(function (array $row): array {
+            return collect($row)->map(fn (mixed $value): mixed => is_array($value)
+                ? json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+                : $value)->all();
+        })->values();
+        $columns = $normalized->flatMap(fn (array $row): array => array_keys($row))->unique()->values()->all();
+        $handle = fopen('php://temp', 'r+');
+        fwrite($handle, "\xEF\xBB\xBF");
+        fputcsv($handle, $columns);
+        foreach ($normalized as $row) {
+            fputcsv($handle, array_map(fn (string $column): mixed => $row[$column] ?? null, $columns));
+        }
+        rewind($handle);
+        $contents = stream_get_contents($handle);
+        fclose($handle);
+
+        return is_string($contents) ? $contents : '';
     }
 }

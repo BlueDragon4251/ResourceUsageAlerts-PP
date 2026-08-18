@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PelicanPlugins\ResourceUsageAlerts\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertStatus;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertSample;
@@ -36,6 +35,7 @@ class CleanResolvedAlerts extends Command
         $this->line("  Deleted {$deletedSamples} samples.");
 
         $this->info('Cleanup complete.');
+
         return self::SUCCESS;
     }
 }

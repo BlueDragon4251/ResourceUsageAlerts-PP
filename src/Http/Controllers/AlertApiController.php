@@ -14,19 +14,27 @@ use PelicanPlugins\ResourceUsageAlerts\Enums\AlertSeverity;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertStatus;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertEvent;
 use PelicanPlugins\ResourceUsageAlerts\Models\ResourceAlertRule;
+use PelicanPlugins\ResourceUsageAlerts\Services\PermissionService;
 
 class AlertApiController extends Controller
 {
+    public function __construct(private readonly PermissionService $permissions) {}
+
     public function index(Request $request): JsonResponse
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
 
         $query = ResourceAlertEvent::query()
             ->with(['rule', 'server', 'node'])
             ->latest('triggered_at');
+
+        if (! $user->isRootAdmin() && ! $user->can('viewList resourceAlertEvent')) {
+            $serverIds = Server::query()->get()->filter(fn (Server $server) => $this->permissions->canViewServerAlerts($user, $server))->pluck('id');
+            $query->whereIn('server_id', $serverIds);
+        }
 
         if ($request->has('status')) {
             $query->where('status', $request->input('status'));
@@ -49,9 +57,11 @@ class AlertApiController extends Controller
     {
         $event = ResourceAlertEvent::with(['rule', 'server', 'node', 'user'])->find($id);
 
-        if (!$event) {
+        if (! $event) {
             return response()->json(['error' => 'Event not found'], 404);
         }
+
+        $this->authorizeEvent($event);
 
         return response()->json($event);
     }
@@ -60,9 +70,11 @@ class AlertApiController extends Controller
     {
         $event = ResourceAlertEvent::find($id);
 
-        if (!$event) {
+        if (! $event) {
             return response()->json(['error' => 'Event not found'], 404);
         }
+
+        $this->authorizeEvent($event, true);
 
         if ($event->status !== AlertStatus::OPEN) {
             return response()->json(['error' => 'Event is not open'], 422);
@@ -80,9 +92,11 @@ class AlertApiController extends Controller
     {
         $event = ResourceAlertEvent::find($id);
 
-        if (!$event) {
+        if (! $event) {
             return response()->json(['error' => 'Event not found'], 404);
         }
+
+        $this->authorizeEvent($event, true);
 
         if ($event->status === AlertStatus::RESOLVED) {
             return response()->json(['error' => 'Event is already resolved'], 422);
@@ -98,6 +112,7 @@ class AlertApiController extends Controller
 
     public function rules(Request $request): JsonResponse
     {
+        abort_unless(Auth::user()?->isRootAdmin() || Auth::user()?->can('viewList resourceAlertRule'), 403);
         $query = ResourceAlertRule::query()
             ->with(['server', 'node', 'user']);
 
@@ -112,6 +127,7 @@ class AlertApiController extends Controller
 
     public function stats(): JsonResponse
     {
+        abort_unless(Auth::user()?->isRootAdmin() || Auth::user()?->can('viewList resourceAlertEvent'), 403);
         $stats = [
             'open' => ResourceAlertEvent::where('status', AlertStatus::OPEN)->count(),
             'acknowledged' => ResourceAlertEvent::where('status', AlertStatus::ACKNOWLEDGED)->count(),
@@ -123,5 +139,16 @@ class AlertApiController extends Controller
         ];
 
         return response()->json($stats);
+    }
+
+    private function authorizeEvent(ResourceAlertEvent $event, bool $update = false): void
+    {
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
+        if ($user->isRootAdmin() || $user->can(($update ? 'update' : 'view').' resourceAlertEvent')) {
+            return;
+        }
+
+        abort_unless($event->server && $this->permissions->canViewServerAlerts($user, $event->server), 403);
     }
 }

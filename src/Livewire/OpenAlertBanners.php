@@ -26,7 +26,7 @@ class OpenAlertBanners extends Component
     public function mount(string $panelId): void
     {
         $this->panelId = $panelId;
-        $this->alertBanners = new AlertBannerCollection();
+        $this->alertBanners = new AlertBannerCollection;
         $this->loadBanners();
     }
 
@@ -42,7 +42,7 @@ class OpenAlertBanners extends Component
 
     private function loadBanners(): void
     {
-        if (!$this->enabled() || !Schema::hasTable('resource_alert_events') || !auth()->check()) {
+        if (! $this->enabled() || ! Schema::hasTable('resource_alert_events') || ! auth()->check()) {
             return;
         }
 
@@ -55,12 +55,12 @@ class OpenAlertBanners extends Component
 
             if ($this->panelId === 'server') {
                 $server = Filament::getTenant();
-                if (!$server instanceof Server || !app(PermissionService::class)->canViewServerAlerts(user(), $server)) {
+                if (! $server instanceof Server || ! app(PermissionService::class)->canViewServerAlerts(user(), $server)) {
                     return;
                 }
                 $query->where('server_id', $server->id);
             } elseif ($this->panelId === 'admin') {
-                if (!user()?->can('receive resourceAlertEvent') && !user()?->isRootAdmin()) {
+                if (! user()?->can('receive resourceAlertEvent') && ! user()?->isRootAdmin()) {
                     return;
                 }
             } else {

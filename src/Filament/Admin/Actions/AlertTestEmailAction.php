@@ -18,11 +18,12 @@ class AlertTestEmailAction
             ->requiresConfirmation()
             ->action(function (): void {
                 $email = config('resourceusagealerts.alert_test_email');
-                if (!$email) {
+                if (! $email) {
                     Notification::make()
                         ->danger()
                         ->title(trans('resourceusagealerts::strings.channels.test_failed'))
                         ->send();
+
                     return;
                 }
 

@@ -7,6 +7,7 @@ namespace PelicanPlugins\ResourceUsageAlerts\Filament\Admin\Resources\ResourceAl
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\PageRegistration;
@@ -30,7 +31,6 @@ class ResourceAlertEventResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'tabler-alert-triangle';
 
-
     public static function canAccess(): bool
     {
         return SchemaFacade::hasTable('resource_alert_events') && parent::canAccess();
@@ -48,7 +48,7 @@ class ResourceAlertEventResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        if (!SchemaFacade::hasTable('resource_alert_events')) {
+        if (! SchemaFacade::hasTable('resource_alert_events')) {
             return null;
         }
 
@@ -136,6 +136,15 @@ class ResourceAlertEventResource extends Resource
             TextEntry::make('acknowledged_at')->dateTime()->placeholder('-'),
             TextEntry::make('resolved_at')->dateTime()->placeholder('-'),
             TextEntry::make('notification_count'),
+            RepeatableEntry::make('comments')
+                ->label(trans('resourceusagealerts::strings.events.comments'))
+                ->schema([
+                    TextEntry::make('user.email')->label(trans('resourceusagealerts::strings.events.comment_author'))->placeholder('-'),
+                    TextEntry::make('created_at')->label(trans('resourceusagealerts::strings.events.comment_created_at'))->dateTime(),
+                    TextEntry::make('body')->label(trans('resourceusagealerts::strings.events.comment'))->columnSpanFull(),
+                ])
+                ->columns(2)
+                ->columnSpanFull(),
         ])->columns(2);
     }
 

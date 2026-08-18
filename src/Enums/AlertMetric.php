@@ -25,6 +25,9 @@ enum AlertMetric: string
     case OOM_EVENTS = 'oom_events';
     case SSL_CERT_EXPIRY = 'ssl_cert_expiry';
     case WINGS_VERSION = 'wings_version';
+    case QUEUE_FAILED_JOBS = 'queue_failed_jobs';
+    case QUEUE_OLDEST_JOB_AGE = 'queue_oldest_job_age';
+    case CUSTOM = 'custom';
 
     public function isBoolean(): bool
     {
@@ -35,9 +38,7 @@ enum AlertMetric: string
             self::BACKUP_FAILED,
             self::BACKUP_STALE,
             self::OOM_EVENTS,
-            self::SSL_CERT_EXPIRY,
-            self::WINGS_VERSION,
-            => true,
+            self::WINGS_VERSION, => true,
             default => false,
         };
     }
@@ -63,6 +64,9 @@ enum AlertMetric: string
             self::OOM_EVENTS => trans('resourceusagealerts::strings.metrics.oom_events'),
             self::SSL_CERT_EXPIRY => trans('resourceusagealerts::strings.metrics.ssl_cert_expiry'),
             self::WINGS_VERSION => trans('resourceusagealerts::strings.metrics.wings_version'),
+            self::QUEUE_FAILED_JOBS => trans('resourceusagealerts::strings.metrics.queue_failed_jobs'),
+            self::QUEUE_OLDEST_JOB_AGE => trans('resourceusagealerts::strings.metrics.queue_oldest_job_age'),
+            self::CUSTOM => trans('resourceusagealerts::strings.metrics.custom'),
         };
     }
 }

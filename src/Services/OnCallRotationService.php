@@ -17,7 +17,7 @@ class OnCallRotationService
     public function getOnCallUser(ResourceAlertRule $rule): ?User
     {
         $rotation = $rule->config['on_call_rotation'] ?? null;
-        if (!$rotation || !is_array($rotation) || empty($rotation['users'])) {
+        if (! $rotation || ! is_array($rotation) || empty($rotation['users'])) {
             return null;
         }
 
@@ -34,7 +34,7 @@ class OnCallRotationService
         $currentIndex = (int) floor($minutesSinceStart / $rotationMinutes) % count($users);
 
         $userId = $users[$currentIndex] ?? null;
-        if (!$userId) {
+        if (! $userId) {
             return null;
         }
 
@@ -47,7 +47,7 @@ class OnCallRotationService
     public function notifyOnCall(ResourceAlertEvent $event): void
     {
         $onCallUser = $this->getOnCallUser($event->rule);
-        if (!$onCallUser) {
+        if (! $onCallUser) {
             return;
         }
 
@@ -61,6 +61,7 @@ class OnCallRotationService
     public function hasRotation(ResourceAlertRule $rule): bool
     {
         $rotation = $rule->config['on_call_rotation'] ?? null;
-        return is_array($rotation) && !empty($rotation['users']);
+
+        return is_array($rotation) && ! empty($rotation['users']);
     }
 }

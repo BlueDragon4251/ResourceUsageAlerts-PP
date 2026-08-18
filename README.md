@@ -4,6 +4,8 @@ Resource Usage Alerts is a Pelican Panel plugin for monitoring server and node r
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for version history and notable changes.
 
+Current version: `1.3.6`.
+
 ## License and usage rights
 
 Resource Usage Alerts is **source-available, not open source**. You may download and use the official plugin on your own Pelican Panel installation, but you may not redistribute it, reupload it, publish forks, publish modified versions, rename it, resell it, or release derivative versions.
@@ -12,14 +14,16 @@ Official distribution is only allowed through channels approved by Nico Egger / 
 
 ## Requirements
 
-- Pelican Panel with PHP 8.3 or newer
+- Pelican Panel compatible with `^1.0.0-beta34` (including `1.0.0-beta38`) with PHP 8.3 or newer
 - Laravel queue worker
 - Laravel scheduler running every minute
+
+For upgrades to `1.3.6`, use the Pelican-supported PHP/Laravel/Filament versions, keep `minishlink/web-push` compatible with the Panel lockfile, run plugin migrations, restart queue workers, and clear optimized caches. The admin first-install checklist and `php artisan resource-alerts:doctor` report missing tables, stale scheduler runs, queue configuration, push keys, mail transport, and secret-decryption problems.
 - Reachable Wings nodes for live metrics
 - A configured mailer for email notifications
 - HTTPS and the PHP `openssl`, `curl`, and `mbstring` extensions for browser push
 
-The plugin was built against the local Pelican installation using Laravel 13 and Filament 5.6.
+The plugin is tested against Pelican `1.0.0-beta38` using Laravel 13 and Filament 5.7.
 
 ## Installation through Plugin Upload
 

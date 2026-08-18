@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertMetric;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertSeverity;
 use PelicanPlugins\ResourceUsageAlerts\Enums\AlertStatus;
@@ -55,6 +56,11 @@ class ResourceAlertEvent extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(ResourceAlertComment::class, 'event_id')->oldest();
     }
 
     public function scopeOpen(Builder $query): Builder

@@ -26,12 +26,13 @@ class SendAlertNotificationJob implements ShouldQueue
     public function __construct(
         public readonly int $eventId,
         public readonly bool $resolved = false,
+        public readonly bool $escalated = false,
     ) {}
 
     public function handle(AlertNotificationService $service): void
     {
         $event = ResourceAlertEvent::query()->with(['rule', 'server', 'node', 'user'])->find($this->eventId);
-        if (!$event) {
+        if (! $event) {
             return;
         }
 

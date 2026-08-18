@@ -2,7 +2,7 @@
   "id": "resourceusagealerts",
   "name": "Resource Usage Alerts",
   "author": "BlueWolf",
-  "version": "1.3.5",
+  "version": "1.3.6",
   "description": "Monitor server and node resources and send alerts when thresholds are exceeded.",
   "category": "plugin",
   "url": "https://github.com/BlueDragon4251/ResourceUsageAlerts-PP",
@@ -14,7 +14,7 @@
     "admin",
     "server"
   ],
-  "panel_version": null,
+  "panel_version": "^1.0.0-beta34",
   "composer_packages": {
     "minishlink/web-push": "^9.0"
   }

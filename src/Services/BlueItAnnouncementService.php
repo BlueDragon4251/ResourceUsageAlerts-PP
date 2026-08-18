@@ -24,7 +24,7 @@ class BlueItAnnouncementService
     /** @return array<int, array<string, mixed>> */
     public function announcementsFor(User $user, ?Server $server = null): array
     {
-        if (!$this->canReceive($user, $server)) {
+        if (! $this->canReceive($user, $server)) {
             return [];
         }
 
@@ -49,7 +49,7 @@ class BlueItAnnouncementService
 
     public function dismiss(User $user, string $announcementId): void
     {
-        if (!Schema::hasTable('resource_usage_alerts_announcement_reads')) {
+        if (! Schema::hasTable('resource_usage_alerts_announcement_reads')) {
             return;
         }
 
@@ -61,7 +61,7 @@ class BlueItAnnouncementService
 
     public function markDelivered(User $user, string $announcementId): void
     {
-        if (!Schema::hasTable('resource_usage_alerts_announcement_reads')) {
+        if (! Schema::hasTable('resource_usage_alerts_announcement_reads')) {
             return;
         }
 
@@ -73,7 +73,7 @@ class BlueItAnnouncementService
 
     public function wasDelivered(User $user, string $announcementId): bool
     {
-        if (!Schema::hasTable('resource_usage_alerts_announcement_reads')) {
+        if (! Schema::hasTable('resource_usage_alerts_announcement_reads')) {
             return false;
         }
 
@@ -92,7 +92,7 @@ class BlueItAnnouncementService
     /** @param array<int, array<string, mixed>> $announcements */
     public function removeInactiveDatabaseNotifications(User $user, array $announcements): void
     {
-        if (!$this->announcementsRequestSucceeded()) {
+        if (! $this->announcementsRequestSucceeded()) {
             return;
         }
 
@@ -118,7 +118,7 @@ class BlueItAnnouncementService
                 $belongsToPlugin = $pluginId === 'resourceusagealerts'
                     || ($pluginId === '' && in_array($announcementId, $knownIds, true));
 
-                if ($belongsToPlugin && !in_array($announcementId, $activeIds, true)) {
+                if ($belongsToPlugin && ! in_array($announcementId, $activeIds, true)) {
                     $notification->delete();
                 }
             });
@@ -142,7 +142,7 @@ class BlueItAnnouncementService
 
         if ($buttonUrl) {
             $notification->actions([
-                Action::make('open_blueit_resourceusagealerts_announcement_' . preg_replace('/[^a-zA-Z0-9_]/', '_', (string) $announcement['id']))
+                Action::make('open_blueit_resourceusagealerts_announcement_'.preg_replace('/[^a-zA-Z0-9_]/', '_', (string) $announcement['id']))
                     ->button()
                     ->label($buttonText)
                     ->markAsRead()
@@ -155,7 +155,7 @@ class BlueItAnnouncementService
 
     public function canReceive(?User $user, ?Server $server = null): bool
     {
-        if (!$user || !(bool) config('resourceusagealerts.blueit_announcements_enabled', true)) {
+        if (! $user || ! (bool) config('resourceusagealerts.blueit_announcements_enabled', true)) {
             return false;
         }
 
@@ -163,7 +163,7 @@ class BlueItAnnouncementService
             return true;
         }
 
-        if (!$server) {
+        if (! $server) {
             return $user->servers()->exists()
                 || $user->subusers()
                     ->get()
@@ -180,7 +180,7 @@ class BlueItAnnouncementService
     /** @return array<int, string> */
     private function readIds(User $user): array
     {
-        if (!Schema::hasTable('resource_usage_alerts_announcement_reads')) {
+        if (! Schema::hasTable('resource_usage_alerts_announcement_reads')) {
             return [];
         }
 
@@ -217,7 +217,7 @@ class BlueItAnnouncementService
                         'version' => self::PLUGIN_VERSION,
                     ]);
 
-                if (!$response->successful() || !$this->validSignature($response->body(), (string) $response->header('x-blueit-signature', ''))) {
+                if (! $response->successful() || ! $this->validSignature($response->body(), (string) $response->header('x-blueit-signature', ''))) {
                     return ['available' => false, 'announcements' => []];
                 }
 
@@ -246,7 +246,7 @@ class BlueItAnnouncementService
     /** @return array<int, string> */
     private function knownAnnouncementIds(User $user): array
     {
-        if (!Schema::hasTable('resource_usage_alerts_announcement_reads')) {
+        if (! Schema::hasTable('resource_usage_alerts_announcement_reads')) {
             return [];
         }
 
@@ -280,7 +280,7 @@ class BlueItAnnouncementService
             return true;
         }
 
-        return hash_equals('sha256=' . hash_hmac('sha256', $body, $secret), $signature);
+        return hash_equals('sha256='.hash_hmac('sha256', $body, $secret), $signature);
     }
 
     /** @param array<string, mixed> $announcement */
@@ -295,20 +295,19 @@ class BlueItAnnouncementService
         $announcement['button_url'] = $this->safeUrl((string) ($announcement['button_url'] ?? ''));
         $announcement['image_url'] = $this->safeUrl((string) ($announcement['image_url'] ?? ''));
         $announcement['read_id'] = $this->readKey($announcement);
-        $announcement['notification_id'] = 'blueit-resourceusagealerts-' . hash('sha256', $announcement['read_id']);
+        $announcement['notification_id'] = 'blueit-resourceusagealerts-'.hash('sha256', $announcement['read_id']);
 
         $tenant = Filament::getTenant();
-        if (($announcement['type'] ?? 'normal') === 'update' && !$announcement['button_url'] && $tenant instanceof Server) {
+        if (($announcement['type'] ?? 'normal') === 'update' && ! $announcement['button_url'] && $tenant instanceof Server) {
             $announcement['button_url'] = ResourceAlerts::getUrl(panel: 'server', tenant: $tenant);
         }
 
         return $announcement;
     }
 
-    /** @param mixed $value */
     private function localizedValue(mixed $value, string $locale): string
     {
-        if (!is_array($value)) {
+        if (! is_array($value)) {
             return '';
         }
 
@@ -335,7 +334,7 @@ class BlueItAnnouncementService
         $id = (string) ($announcement['id'] ?? '');
         $updatedAt = trim((string) ($announcement['updated_at'] ?? $announcement['updatedAt'] ?? ''));
 
-        return ($updatedAt !== '' ? $id . ':' . $updatedAt : $id) . ':popup-v2';
+        return ($updatedAt !== '' ? $id.':'.$updatedAt : $id).':popup-v2';
     }
 
     /** @param array<string, mixed> $announcement */

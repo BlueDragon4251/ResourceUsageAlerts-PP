@@ -20,7 +20,7 @@ class PermissionService
 
     public function canCreateServerRule(User $user, Server $server): bool
     {
-        if (!$this->booleanConfig('resourceusagealerts.allow_user_rules', true)) {
+        if (! $this->booleanConfig('resourceusagealerts.allow_user_rules', true)) {
             return false;
         }
 

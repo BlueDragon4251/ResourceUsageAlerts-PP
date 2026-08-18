@@ -3,8 +3,12 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use PelicanPlugins\ResourceUsageAlerts\Http\Controllers\AlertStatusPageController;
 use PelicanPlugins\ResourceUsageAlerts\Http\Controllers\PushServiceWorkerController;
 use PelicanPlugins\ResourceUsageAlerts\Http\Controllers\PushSubscriptionController;
+
+Route::get('/resource-alerts/status-feed/{token?}', [AlertStatusPageController::class, 'feed'])->name('resourceusagealerts.status.feed');
+Route::get('/resource-alerts/status/{token?}', [AlertStatusPageController::class, 'html'])->name('resourceusagealerts.status');
 
 Route::get('/resource-usage-alerts-sw.js', PushServiceWorkerController::class)
     ->name('resourceusagealerts.push.worker');

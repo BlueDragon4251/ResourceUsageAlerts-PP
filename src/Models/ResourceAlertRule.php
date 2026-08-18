@@ -54,6 +54,7 @@ class ResourceAlertRule extends Model
             'duration_minutes' => 'integer',
             'cooldown_minutes' => 'integer',
             'channels' => 'array',
+            'config' => 'array',
             'enabled' => 'boolean',
             'last_checked_at' => 'datetime',
         ];
@@ -87,5 +88,20 @@ class ResourceAlertRule extends Model
     public function scopeEnabled(Builder $query): Builder
     {
         return $query->where('enabled', true);
+    }
+
+    /** @return float[] */
+    public function recentValues(int $limit = 20): array
+    {
+        $query = ResourceAlertSample::query()->where('metric', $this->metric->value);
+        if ($this->server_id !== null) {
+            $query->where('server_id', $this->server_id);
+        }
+        if ($this->node_id !== null) {
+            $query->where('node_id', $this->node_id);
+        }
+
+        return $query->latest('sampled_at')->limit(max(2, min(100, $limit)))
+            ->pluck('value')->reverse()->map(fn (mixed $value): float => (float) $value)->values()->all();
     }
 }
