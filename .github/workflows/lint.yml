@@ -35,11 +35,11 @@ jobs:
         run: composer install --no-interaction --prefer-dist --no-scripts
 
       - name: Check formatting
-        run: pint --test plugin
+        run: pelican/vendor/bin/pint --test plugin
 
       - name: Run PHPStan
         working-directory: plugin
-        run: phpstan analyse --no-progress --memory-limit=1G
+        run: ../pelican/vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
       - name: Run focused tests
         run: php plugin/tests/run.php
